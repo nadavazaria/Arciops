@@ -1,6 +1,6 @@
 import pygame
 import constants
-
+import math
 
 
 class Player:
@@ -13,10 +13,13 @@ class Player:
         self.health = health
         self.alive = True
         self.image = self.animation_list[0][self.frame_index]
-        self.rect = pygame.Rect(0,0,constants.TILE_SIZE,constants.TILE_SIZE) 
-        self.rect.center = (x,y)
         self.flip = False
         self.coins = 0
+        if char_type == constants.BIG_DEMON:
+            self.rect = pygame.Rect(0,0,constants.TILE_SIZE*2,constants.TILE_SIZE*2) 
+        else:
+            self.rect = pygame.Rect(0,0,constants.TILE_SIZE*0.9,constants.TILE_SIZE*0.9) 
+        self.rect.center = (x,y)
 
     def update(self): 
         """am i alive ?"""
@@ -53,12 +56,29 @@ class Player:
             self.action = new_action 
             self.frame_index = 0
 
-    def enemy_movement(self,screen_scroll):
+    def enemy_movement(self,player,obstacle_tiles,screen_scroll):
+        self.mob_dx =0
+        self.mob_dy =0
+
         """move mobs reletive to camra"""
         self.rect.x += screen_scroll[0]
         self.rect.y += screen_scroll[1]
 
-    def move(self,dx,dy):
+        if self.rect.centerx > player.rect.centerx and self.health > 0:
+            self.mob_dx = -constants.ENEMY_SPEED
+        if self.rect.centerx < player.rect.centerx and self.health > 0:
+            self.mob_dx = constants.ENEMY_SPEED
+        
+        if self.rect.centery > player.rect.centery and self.health > 0:
+            self.mob_dy = -constants.ENEMY_SPEED
+        if self.rect.centery < player.rect.centery and self.health > 0:
+            self.mob_dy = constants.ENEMY_SPEED
+        
+        
+        self.move(self.mob_dx,self.mob_dy,obstacle_tiles)
+
+
+    def move(self,dx,dy,obstacle_tiles):
         screen_scroll = [0,0]
         if (dx == 0 and dy == 0):
             self.action = "idle" 
@@ -72,10 +92,30 @@ class Player:
         if (dx < 0):
             self.flip = True
         if (dx != 0 & dy != 0):
-            dx = dx * 0.71  
-            dy = dy * 0.71  
+            dx = dx * math.sqrt(2)/2  
+            dy = dy * math.sqrt(2)/2  
+
+        """check for collision with walls in x axis"""
+        
         self.rect.x += dx
+        for wall in obstacle_tiles:
+            if wall[1].colliderect(self.rect):
+                """chack where the player is moving"""
+                if  dx > 0:
+                    self.rect.right = wall[1].left
+                if dx < 0:
+                    self.rect.left = wall[1].right
+
         self.rect.y += dy
+        for wall in obstacle_tiles:
+            if wall[1].colliderect(self.rect):
+                """chack where the player is moving"""
+                if  dy > 0:
+                    self.rect.bottom = wall[1].top
+                if dy < 0:
+                    self.rect.top = wall[1].bottom
+
+
 
         """scroll update relevent only for the player"""
         if self.char_type == constants.ELF:
@@ -88,7 +128,7 @@ class Player:
                 self.rect.left = constants.SCROLL_THRESHOLD
 
                 
-            """fix this it sucks !!"""
+            """scroll up and down """
             
             if self.rect.top <   constants.SCROLL_THRESHOLD:
                 screen_scroll[1] =  constants.SCROLL_THRESHOLD - self.rect.top

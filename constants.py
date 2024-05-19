@@ -9,7 +9,9 @@ FPS = 60
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 SCALE = 3
-ITEM_SCALE = 2
+POTION_SCALE = 2
+ITEM_SCALE = 3
+WHEAPON_SCALE = 1.5
 
 
 
@@ -21,11 +23,16 @@ BLACK = (0,0,0)
 PINK = (255,0,255)
 WHITE = (255,255,255)
 
+"""world constatnts """
 SPEED = 5
-TILE_SIZE =16 *SCALE
+ENEMY_SPEED = 3
+TILE_SIZE =16 * SCALE
 TILE_TYPES = 18
 ROWS = 150
 COLS = 150
+SCROLL_THRESHOLD = 200
+
+
 """charecter type constants"""
 ELF = 0
 GOBLIN = 1
@@ -35,7 +42,6 @@ SKELETON = 4
 TINY_ZOMBIE = 5
 BIG_DEMON = 6
 
-SCROLL_THRESHOLD = 200
 
 """item type constants """
 COIN = 0

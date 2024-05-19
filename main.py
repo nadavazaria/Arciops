@@ -18,7 +18,7 @@ pygame.display.set_caption("Arciops")
 clock = pygame.time.Clock()
 
 """define the game level"""
-level = 3
+level = 1
 screen_scroll = [0,0]
 
 
@@ -36,9 +36,10 @@ def scale_img(image,scale):
 
 """load map tiles"""
 list_of_tiles = []
-for i in range(constants.TILE_TYPES):
-    tile = scale_img(pygame.image.load(f"assets/images/tiles/{i}.png").convert_alpha(),constants.SCALE) 
-    list_of_tiles.append(tile)
+for x in range(constants.TILE_TYPES):
+    tile_image = pygame.image.load(f"assets/images/tiles/{x}.png").convert_alpha()
+    tile_image = pygame.transform.scale(tile_image, (constants.TILE_SIZE, constants.TILE_SIZE))
+    list_of_tiles.append(tile_image)
 
 
 
@@ -49,7 +50,7 @@ heart_empty = scale_img(pygame.image.load("assets/images/items/heart_empty.png")
 
 """load the items"""
 item_image_list = []
-potion_red = scale_img(pygame.image.load("assets/images/items/potion_red.png").convert_alpha(),constants.ITEM_SCALE) 
+potion_red = scale_img(pygame.image.load("assets/images/items/potion_red.png").convert_alpha(),constants.POTION_SCALE) 
 
 """load coin animation"""
 coin_amination_list = []
@@ -62,9 +63,9 @@ item_image_list.append(coin_amination_list)
 item_image_list.append([potion_red])
 
 """load weapon images"""
-weapon_image  = pygame.image.load(f"assets/images/weapons/bow.png").convert_alpha()
-arrow_image  = pygame.image.load(f"assets/images/weapons/arrow.png").convert_alpha()
-fireball_image = pygame.image.load(f"assets/images/weapons/fireball.png").convert_alpha()
+weapon_image  = scale_img(pygame.image.load(f"assets/images/weapons/bow.png").convert_alpha(),constants.WHEAPON_SCALE)
+arrow_image  = scale_img(pygame.image.load(f"assets/images/weapons/arrow.png").convert_alpha(),constants.WHEAPON_SCALE)
+fireball_image = scale_img(pygame.image.load(f"assets/images/weapons/fireball.png").convert_alpha(),constants.WHEAPON_SCALE)
 
 """load magic images"""
 lightning_animation = []
@@ -96,27 +97,22 @@ def draw_text(text,font,color,x,y):
     screen.blit(img,(x,y))
 
 
-
-
-
 def draw_info():
-    """draw life"""
+    """draw life the numbers passed to the screen blit is the offset of the hearts"""
     pygame.draw.line(screen,constants.WHITE,(0,50),(constants.SCREEN_WIDTH,50))
     for i in range(5):
         if player.health >= ((i+1)*20):
-            screen.blit(heart_full,(10 + i*50,20))
+            screen.blit(heart_full,(10 + i*50,5))
         elif player.health <= ((i+1)*20) and player.health >((i)*20):
-            screen.blit(heart_half,(10 + i*50,20))
-        else:screen.blit(heart_empty,(10 + i*50,20))
+            screen.blit(heart_half,(10 + i*50,5))
+        else:screen.blit(heart_empty,(10 + i*50,5))
     """level"""
     draw_text(f"Level: {level}",font,constants.WHITE,350,20)
 
     """show score"""
-    draw_text(f"X{player.coins}",font,constants.WHITE,700,20)
+    draw_text(f"X{player.coins}",font,constants.WHITE,695,17)
 
 """creating the initial player instance"""
-player = Player(300,300,20,mob_animations,constants.ELF)
-bow = Weapon(weapon_image,arrow_image,lightning_animation,player)
  
 world_data = []
 for row in range(constants.ROWS):
@@ -131,36 +127,26 @@ with open(f"levels/level{level}_data.csv",newline="") as csvfile:
                 world_data[row_num][col_num] = int(tile)
 
 world = World()
-world.process_data(world_data,list_of_tiles,item_image_list)
+world.process_data(world_data,list_of_tiles,item_image_list,mob_animations,screen)
 
-
-
-
-
-
-
-"""create enemy"""
-enemy1 = Player(500,500,1000000,mob_animations,constants.BIG_DEMON)
-enemy2 = Player(400,300,100,mob_animations,constants.BIG_DEMON)
-enemy3 = Player(200,100,100,mob_animations,constants.BIG_DEMON)
-enemy4 = Player(150,150,100,mob_animations,constants.BIG_DEMON)
-
-"""make a list of all the enemys"""
-enemy_list = []
-enemy_list.append(enemy1)
-# enemy_list.append(enemy2)
-# enemy_list.append(enemy3)
-# enemy_list.append(enemy4)
+player = world.player
+bow = Weapon(weapon_image,arrow_image,lightning_animation,player)
 
 arrow_group = pygame.sprite.Group()
 lightning_group = pygame.sprite.Group()
+
 item_group = pygame.sprite.Group()
-coin = Item(200,200,constants.COIN,item_image_list)
-potion = Item(200,300,constants.POTION_RED,item_image_list)
-score_coin = Item(680,30,constants.COIN,item_image_list,True)
-item_group.add(coin)
+score_coin = Item(680,25,constants.COIN,item_image_list,True)
 item_group.add(score_coin)
-item_group.add(potion)
+
+for item in world.item_list:
+    item_group.add(item)
+
+
+
+
+
+
 
 damage_text_group = pygame.sprite.Group()
 
@@ -172,7 +158,7 @@ while run:
     screen.fill(constants.BLACK)
     world.draw(screen)
     player.draw(screen)    
-    for enemy in enemy_list:
+    for enemy in world.enemy_list:
         enemy.draw(screen)
     bow.draw(screen)
     draw_info()
@@ -257,37 +243,36 @@ while run:
         dx = constants.SPEED
 
     
-    screen_scroll = player.move(dx,dy)
+    screen_scroll = player.move(dx,dy,world.obstacle_tiles)
 
 
     """updateing the objects and the world data """
     world.update(screen_scroll)
     player.update()
-    for enemy in enemy_list:
-        enemy.enemy_movement(screen_scroll)
+    for enemy in world.enemy_list:
+        enemy.enemy_movement(player,world.obstacle_tiles,screen_scroll)
         enemy.update()
-        # print(enemy.health)
-        if enemy.health <= 0:
-            pass 
+            # print(enemy.health)
+        
 
     damage_text_group.update(screen_scroll)
     item_group.update(screen_scroll,player)   
 
 
     """this is the shooting function and the bow that fixes itself to the player"""
-    arrow,lightning_magic = bow.update(player.rect.x,player.rect.y)
+    arrow,lightning_magic = bow.update(player)
     if arrow:
         arrow_group.add(arrow)
     for arrow in arrow_group:
         arrow.draw(screen)
-        damage_text = arrow.update(enemy_list,screen_scroll)
+        damage_text = arrow.update(world.enemy_list,screen_scroll)
         if damage_text:
             damage_text_group.add(damage_text)
     
     if lightning_magic:
         lightning_group.add(lightning_magic)
     for lightning in lightning_group:
-        damage_text = lightning.update(screen,enemy_list,screen_scroll)
+        damage_text = lightning.update(screen,world.enemy_list,screen_scroll)
         if damage_text:
             damage_text_group.add(damage_text)
         

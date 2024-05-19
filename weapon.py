@@ -18,12 +18,11 @@ class Weapon:
         self.player = player
 
       
-    def update(self,x,y):
+    def update(self,player):
         
-        self.rect.x = x
-        self.rect.y = y 
         arrow = None
         lightning = None
+        self.rect.center = player.rect.center
         dist_x = -(self.rect.x - pygame.mouse.get_pos()[0])
         dist_y = (self.rect.y -pygame.mouse.get_pos()[1]) # in pygame the y cords are fliped
         radian = math.atan2(dist_y,dist_x)
