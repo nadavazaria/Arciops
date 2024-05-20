@@ -62,7 +62,7 @@ class Arrow(pygame.sprite.Sprite):
     def draw(self,surface): 
         surface.blit(self.image,self.rect.center)
     # def draw(self,surface):
-    def update(self,enemy_list,screen_scroll):
+    def update(self,enemy_list,screen_scroll,obstacle_tiles):
         self.rect.x += screen_scroll[0]
         self.rect.y += screen_scroll[1]
         
@@ -77,11 +77,17 @@ class Arrow(pygame.sprite.Sprite):
             self.kill()
         
         """check collision"""
+        for tile in obstacle_tiles:
+            if tile[1].colliderect(self.rect):
+                self.kill()
         for enemy in enemy_list:
             damage_text = None
+            
             if enemy.rect.colliderect(self.rect) and enemy.alive:
                 damage = self.damage + random.randint(-5,5)
                 enemy.health -= damage
+                enemy.hit = True
+                enemy.last_hit = pygame.time.get_ticks()
                 self.kill()
                 damage_text = DamageText(enemy.rect.centerx,enemy.rect.centery,str(damage),constants.RED)
                 
@@ -141,3 +147,48 @@ class Lightning(pygame.sprite.Sprite):
 
         else:
             self.kill()
+
+class Fireball(pygame.sprite.Sprite):
+    def __init__(self,image,x,y,target_x,target_y):
+        pygame.sprite.Sprite.__init__(self)
+        self.original_img = image
+        self.speed = 5
+        self.update_time = pygame.time.get_ticks()
+        dist_X = target_x - x
+        dist_y = -(target_y - y)
+        self.angle = math.degrees(math.atan2(dist_y,dist_X))
+        self.damage = 20
+        self.image = pygame.transform.rotate(self.original_img,self.angle )
+        self.rect = self.image.get_rect()
+        self.rect.center = (x,y)
+        self.dx = math.cos(math.radians(self.angle))*self.speed
+        self.dy = -math.sin(math.radians(self.angle))*self.speed
+
+    def draw(self,surface): 
+        surface.blit(self.image,self.rect.center)
+    # def draw(self,surface):
+    def update(self,player,obstacle_tiles,screen_scroll):
+        
+        self.rect.centerx += self.dx + screen_scroll[0]
+        self.rect.centery += self.dy + screen_scroll[1]
+
+        # check if arrow is off screen 
+
+        if (self.rect.right < 0) or self.rect.left > constants.SCREEN_WIDTH:
+            self.kill()
+        if (self.rect.top < 0) or self.rect.bottom > constants.SCREEN_HEIGHT:
+            self.kill()
+        
+        """check collision"""
+        # for tile in obstacle_tiles:
+        #     if tile[1].colliderect(self.rect):
+        #         self.kill()
+     
+        
+        if player.rect.colliderect(self.rect) and player.alive:
+            player.health -= self.damage 
+            player.hit = True
+            player.last_hit = pygame.time.get_ticks()
+            self.kill()
+            
+            

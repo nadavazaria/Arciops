@@ -3,7 +3,7 @@ import math
 from world import World
 import constants
 from character import Player
-from weapon import Weapon,Lightning
+from weapon import Weapon,Lightning,Fireball
 from damage_text import  DamageText,font
 from items import Item
 pygame.init() 
@@ -18,7 +18,6 @@ pygame.display.set_caption("Arciops")
 clock = pygame.time.Clock()
 
 """define the game level"""
-level = 1
 screen_scroll = [0,0]
 
 
@@ -112,32 +111,55 @@ def draw_info():
     """show score"""
     draw_text(f"X{player.coins}",font,constants.WHITE,695,17)
 
+
+
+
+def reset_level():
+    item_group.empty()
+    lightning_group.empty()
+    fireball_group.empty()
+    damage_text_group.empty()
+    arrow_group.empty()
+    score_coin = Item(680,25,constants.COIN,item_image_list,True)
+    item_group.add(score_coin)
+    
+    world_data = []
+    for row in range(constants.ROWS):
+        r = [-1]*constants.COLS
+        world_data.append(r)
+    return world_data
 """creating the initial player instance"""
+def make_world_data(level): 
  
-world_data = []
-for row in range(constants.ROWS):
-    r = [-1]*constants.COLS
-    world_data.append(r)
+    world_data = []
+    for row in range(constants.ROWS):
+        r = [-1]*constants.COLS
+        world_data.append(r)
 
-with open(f"levels/level{level}_data.csv",newline="") as csvfile:
-    reader =csv.reader(csvfile,delimiter=",")
-    for row_num,row in enumerate(reader):
-        for col_num,tile in enumerate(row):
-            if tile != "-1":
-                world_data[row_num][col_num] = int(tile)
+    with open(f"levels/level{level}_data.csv",newline="") as csvfile:
+        reader =csv.reader(csvfile,delimiter=",")
+        for row_num,row in enumerate(reader):
+            for col_num,tile in enumerate(row):
+                if tile != "-1":
+                    world_data[row_num][col_num] = int(tile)
+    return world_data
 
+"""creating all the object groups """
+arrow_group = pygame.sprite.Group()
+lightning_group = pygame.sprite.Group()
+fireball_group = pygame.sprite.Group()
+damage_text_group = pygame.sprite.Group()
+item_group = pygame.sprite.Group()
+score_coin = Item(680,25,constants.COIN,item_image_list,True)
+item_group.add(score_coin)
+
+level = 1
 world = World()
+world_data = make_world_data(level)
 world.process_data(world_data,list_of_tiles,item_image_list,mob_animations,screen)
 
 player = world.player
 bow = Weapon(weapon_image,arrow_image,lightning_animation,player)
-
-arrow_group = pygame.sprite.Group()
-lightning_group = pygame.sprite.Group()
-
-item_group = pygame.sprite.Group()
-score_coin = Item(680,25,constants.COIN,item_image_list,True)
-item_group.add(score_coin)
 
 for item in world.item_list:
     item_group.add(item)
@@ -148,7 +170,6 @@ for item in world.item_list:
 
 
 
-damage_text_group = pygame.sprite.Group()
 
 """the actual game loop"""
 run = True
@@ -159,7 +180,8 @@ while run:
     world.draw(screen)
     player.draw(screen)    
     for enemy in world.enemy_list:
-        enemy.draw(screen)
+        if enemy.alive:
+            enemy.draw(screen)
     bow.draw(screen)
     draw_info()
     # score_coin.draw(screen)
@@ -243,18 +265,37 @@ while run:
         dx = constants.SPEED
 
     
-    screen_scroll = player.move(dx,dy,world.obstacle_tiles)
+    screen_scroll,level_complete = player.move(dx,dy,world.obstacle_tiles,world.exit_tile)
 
 
     """updateing the objects and the world data """
     world.update(screen_scroll)
     player.update()
-    for enemy in world.enemy_list:
-        enemy.enemy_movement(player,world.obstacle_tiles,screen_scroll)
-        enemy.update()
-            # print(enemy.health)
-        
 
+    # if level_complete:
+    #     level += 1
+    #     world_data = reset_level()
+    #     with open(f"levels/level{level}_data.csv",newline="") as csvfile:
+    #         reader =csv.reader(csvfile,delimiter=",")
+    #         for row_num,row in enumerate(reader):
+    #             for col_num,tile in enumerate(row):
+    #                 if tile != "-1":
+    #                     world_data[row_num][col_num] = int(tile)
+    #     woeld = World()
+    #     world.process_data(world_data,list_of_tiles,item_image_list,mob_animations,screen)
+
+    cooldown = 500
+    fireball = None        
+    for enemy in world.enemy_list:
+        if enemy.alive:
+            fireball = enemy.enemy_movement(player,world.obstacle_tiles,screen_scroll,fireball_image)
+            enemy.update()
+        if fireball:    
+            fireball_group.add(fireball)
+
+            
+            
+    fireball_group.update(player,world.obstacle_tiles,screen_scroll)
     damage_text_group.update(screen_scroll)
     item_group.update(screen_scroll,player)   
 
@@ -265,7 +306,7 @@ while run:
         arrow_group.add(arrow)
     for arrow in arrow_group:
         arrow.draw(screen)
-        damage_text = arrow.update(world.enemy_list,screen_scroll)
+        damage_text = arrow.update(world.enemy_list,screen_scroll,world.obstacle_tiles)
         if damage_text:
             damage_text_group.add(damage_text)
     
@@ -277,7 +318,7 @@ while run:
             damage_text_group.add(damage_text)
         
     """checking the damage"""
-    
+    fireball_group.draw(screen)
     damage_text_group.draw(screen)
     item_group.draw(screen)
     

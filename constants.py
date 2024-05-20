@@ -26,6 +26,10 @@ WHITE = (255,255,255)
 """world constatnts """
 SPEED = 5
 ENEMY_SPEED = 3
+RANGE = 40
+ATT_RANGE = 55
+
+
 TILE_SIZE =16 * SCALE
 TILE_TYPES = 18
 ROWS = 150

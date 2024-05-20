@@ -9,7 +9,6 @@ class Item(pygame.sprite.Sprite):
         self.timer = pygame.time.get_ticks()
         self.frame_index = 0
         self.image = animation_list[self.item_type][self.frame_index]
-        print(self.image)
         self.rect = self.image.get_rect()
         self.rect.center = (x,y)
         self.dummy_item = dummy_item

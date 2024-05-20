@@ -1,7 +1,7 @@
 import pygame
 import constants
 import math
-
+from weapon import Fireball
 
 class Player:
     def __init__(self,x,y,health,mob_animations,char_type):
@@ -15,6 +15,14 @@ class Player:
         self.image = self.animation_list[0][self.frame_index]
         self.flip = False
         self.coins = 0
+        self.last_hit = pygame.time.get_ticks()
+        self.hit = False
+        self.stunned = False
+        self.chase = False
+        self.chase_clooldown = 0
+        self.shot_fireball = pygame.time.get_ticks()
+        
+
         if char_type == constants.BIG_DEMON:
             self.rect = pygame.Rect(0,0,constants.TILE_SIZE*2,constants.TILE_SIZE*2) 
         else:
@@ -23,6 +31,10 @@ class Player:
 
     def update(self): 
         """am i alive ?"""
+        dmg_cooldown = 1000
+        if pygame.time.get_ticks() - self.last_hit > dmg_cooldown and self.char_type ==constants.ELF:
+            self.hit = False
+
         if self.health <= 0:
             self.health = 0
             self.alive = False
@@ -56,30 +68,75 @@ class Player:
             self.action = new_action 
             self.frame_index = 0
 
-    def enemy_movement(self,player,obstacle_tiles,screen_scroll):
+    def enemy_movement(self,player,obstacle_tiles,screen_scroll,fireball_image):
+        clipped_line = ()
         self.mob_dx =0
         self.mob_dy =0
+        stun_cooldown = 150
+
+        if pygame.time.get_ticks() - self.last_hit < stun_cooldown:
+            self.stunned = True 
+        else:
+            self.stunned = False
 
         """move mobs reletive to camra"""
         self.rect.x += screen_scroll[0]
         self.rect.y += screen_scroll[1]
 
-        if self.rect.centerx > player.rect.centerx and self.health > 0:
-            self.mob_dx = -constants.ENEMY_SPEED
-        if self.rect.centerx < player.rect.centerx and self.health > 0:
-            self.mob_dx = constants.ENEMY_SPEED
+        line_of_sight = ((self.rect.centerx,self.rect.centery),(player.rect.centerx,player.rect.centery))
+        """check if line of sight is obstructed"""
         
-        if self.rect.centery > player.rect.centery and self.health > 0:
-            self.mob_dy = -constants.ENEMY_SPEED
-        if self.rect.centery < player.rect.centery and self.health > 0:
-            self.mob_dy = constants.ENEMY_SPEED
-        
-        
-        self.move(self.mob_dx,self.mob_dy,obstacle_tiles)
+        for obstacle in obstacle_tiles:
+            if obstacle[1].clipline(line_of_sight):
+                clipped_line = obstacle[1].clipline(line_of_sight)
 
+        """make the chase machanic"""
+        if not clipped_line:
+            self.chase = True
+            self.chase_clooldown = pygame.time.get_ticks() + 4000
+        
+        if self.chase_clooldown - pygame.time.get_ticks() < 0:
+            self.chase = False
+            
+        dist = math.sqrt(((self.rect.centerx - player.rect.centerx)**2) + (( self.rect.centery - player.rect.centery)**2))
 
-    def move(self,dx,dy,obstacle_tiles):
+        if dist > constants.RANGE and self.chase:
+            if self.rect.centerx > player.rect.centerx and self.health > 0:
+                self.mob_dx = -constants.ENEMY_SPEED
+            if self.rect.centerx < player.rect.centerx and self.health > 0:
+                self.mob_dx = constants.ENEMY_SPEED
+            
+            if self.rect.centery > player.rect.centery and self.health > 0:
+                self.mob_dy = -constants.ENEMY_SPEED
+            if self.rect.centery < player.rect.centery and self.health > 0:
+                self.mob_dy = constants.ENEMY_SPEED
+            
+        if not self.stunned:
+            self.move(self.mob_dx,self.mob_dy,obstacle_tiles)
+
+        """damage to player"""
+
+        
+        if dist < constants.ATT_RANGE and not player.hit:
+            player.health -= 10 
+            player.hit = True
+            player.last_hit = pygame.time.get_ticks()
+
+        """BOSS mechanics"""
+        fireball_cooldown = 700
+        fireball = None
+        if self.char_type == constants.BIG_DEMON:
+            if pygame.time.get_ticks() - self.shot_fireball > fireball_cooldown:
+                self.shot_fireball = pygame.time.get_ticks()
+                self.shot_fireball = pygame.time.get_ticks()
+                fireball = Fireball(fireball_image,self.rect.centerx,self.rect.centery,player.rect.centerx,player.rect.centerx)
+
+        return fireball
+            
+
+    def move(self,dx,dy,obstacle_tiles,exit_tile = None):
         screen_scroll = [0,0]
+        level_complete = False
         if (dx == 0 and dy == 0):
             self.action = "idle" 
         else:
@@ -139,7 +196,13 @@ class Player:
 
             # print(screen_scroll)
 
-        return screen_scroll
+            if exit_tile[1].colliderect(self.rect):
+                dist = math.sqrt(((exit_tile[1].centerx - self.rect.centerx)**2) + (( exit_tile[1].centery - self.rect.centery)**2))
+                if dist < 30 and not level_complete:
+                    level_complete = True
+                   
+
+        return screen_scroll,level_complete
     
 
     # def killed(self):
