@@ -17,7 +17,6 @@ class World():
         self.mob_animations = mob_animations
         self.level_length = len(data)
         """go thrugh the data that is a 150X150 matrix"""
-
         for y,row in enumerate(data):
         
             for x,tile in enumerate(row):

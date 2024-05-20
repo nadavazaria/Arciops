@@ -106,9 +106,6 @@ class Lightning(pygame.sprite.Sprite):
 
 
     def update(self,surface,enemy_list,screen_scroll):
-        """move the sprite with the screen """
-        self.rect.x += screen_scroll[0]
-        self.rect.y += screen_scroll[1]
     
 
         if self.frame_index <= (len(self.animation_list) -1):

@@ -272,17 +272,18 @@ while run:
     world.update(screen_scroll)
     player.update()
 
-    # if level_complete:
-    #     level += 1
-    #     world_data = reset_level()
-    #     with open(f"levels/level{level}_data.csv",newline="") as csvfile:
-    #         reader =csv.reader(csvfile,delimiter=",")
-    #         for row_num,row in enumerate(reader):
-    #             for col_num,tile in enumerate(row):
-    #                 if tile != "-1":
-    #                     world_data[row_num][col_num] = int(tile)
-    #     woeld = World()
-    #     world.process_data(world_data,list_of_tiles,item_image_list,mob_animations,screen)
+    if level_complete:
+        level += 1
+        world_data = reset_level()
+        with open(f"levels/level{level}_data.csv",newline="") as csvfile:
+            reader =csv.reader(csvfile,delimiter=",")
+            for row_num,row in enumerate(reader):
+                for col_num,tile in enumerate(row):
+                    if tile != "-1":
+                        world_data[row_num][col_num] = int(tile)
+        world = World()
+        world.process_data(world_data,list_of_tiles,item_image_list,mob_animations,screen)
+        player = world.player
 
     cooldown = 500
     fireball = None        
