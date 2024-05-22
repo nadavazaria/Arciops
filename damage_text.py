@@ -22,3 +22,5 @@ class DamageText(pygame.sprite.Sprite):
 
         if  pygame.time.get_ticks() - self.time_of_birth >= self.self_destruct:
             self.kill()
+
+    

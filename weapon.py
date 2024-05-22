@@ -12,9 +12,11 @@ class Weapon:
         self.last_shot_fired = pygame.time.get_ticks()
         self.rate_of_fire = 300
         self.angle = 0
-        self.damage = 10
+        self.damage = 20
         self.image = pygame.transform.rotate(self.original_image,self.angle)
         self.rect = self.image.get_rect()
+        self.rect.center = player.rect.center
+        
         self.player = player
 
       
@@ -30,13 +32,13 @@ class Weapon:
         self.angle = angle
         self.image = pygame.transform.rotate(self.original_image,self.angle )
         
-        if pygame.mouse.get_pressed()[0] and  pygame.time.get_ticks() - self.last_shot_fired > self.rate_of_fire:  
+        if pygame.mouse.get_pressed()[0] and  pygame.time.get_ticks() - self.last_shot_fired > self.rate_of_fire :  
             
-            arrow = Arrow(self.arrow_image,self.rect.centerx,self.rect.centery,self.angle,self.damage )
+            arrow = Arrow(self.arrow_image,self.rect.centerx,self.rect.centery,self.angle,player.damage )
             self.last_shot_fired = pygame.time.get_ticks()
         
-        if pygame.mouse.get_pressed()[2] and  pygame.time.get_ticks() - self.last_shot_fired > self.rate_of_fire:  
-            
+        if pygame.mouse.get_pressed()[2] and  pygame.time.get_ticks() - self.last_shot_fired > self.rate_of_fire and player.mana >= 30:  
+            player.mana -= 30
             lightning = Lightning(self.player,self.lightning_animation)
             self.last_shot_fired = pygame.time.get_ticks()
 
@@ -58,11 +60,12 @@ class Arrow(pygame.sprite.Sprite):
         self.image = pygame.transform.rotate(self.original_img,self.angle)
         self.rect = self.image.get_rect()
         self.rect.center = (x,y)
+        
 
     def draw(self,surface): 
         surface.blit(self.image,self.rect.center)
     # def draw(self,surface):
-    def update(self,enemy_list,screen_scroll,obstacle_tiles):
+    def update(self,enemy_list,screen_scroll,obstacle_tiles,monster_death_fx):
         self.rect.x += screen_scroll[0]
         self.rect.y += screen_scroll[1]
         
@@ -84,7 +87,10 @@ class Arrow(pygame.sprite.Sprite):
             damage_text = None
             
             if enemy.rect.colliderect(self.rect) and enemy.alive:
+                enemy.hit_fx.play()
                 damage = self.damage + random.randint(-5,5)
+                if enemy.health - damage <= 0:
+                    monster_death_fx.play()
                 enemy.health -= damage
                 enemy.hit = True
                 enemy.last_hit = pygame.time.get_ticks()
@@ -100,7 +106,7 @@ class Lightning(pygame.sprite.Sprite):
         self.player = player
         self.image = self.animation_list[0]
         self.rect = self.image.get_rect()
-        self.damage = 100 + random.randint(-50,50)
+        self.damage = player.magic_damage + random.randint(-50,50)
         self.frame_index = 0
         self.last_fired = pygame.time.get_ticks()
 
@@ -151,7 +157,7 @@ class Fireball(pygame.sprite.Sprite):
         self.original_img = image
         self.speed = 5
         self.update_time = pygame.time.get_ticks()
-        dist_X = target_x - x
+        dist_X =  (target_x - x)
         dist_y = -(target_y - y)
         self.angle = math.degrees(math.atan2(dist_y,dist_X))
         self.damage = 20
@@ -160,11 +166,11 @@ class Fireball(pygame.sprite.Sprite):
         self.rect.center = (x,y)
         self.dx = math.cos(math.radians(self.angle))*self.speed
         self.dy = -math.sin(math.radians(self.angle))*self.speed
-
+      
     def draw(self,surface): 
         surface.blit(self.image,self.rect.center)
     # def draw(self,surface):
-    def update(self,player,obstacle_tiles,screen_scroll):
+    def update(self,player,obstacle_tiles,screen_scroll,fire_fx):
         
         self.rect.centerx += self.dx + screen_scroll[0]
         self.rect.centery += self.dy + screen_scroll[1]
@@ -183,6 +189,7 @@ class Fireball(pygame.sprite.Sprite):
      
         
         if player.rect.colliderect(self.rect) and player.alive:
+            fire_fx.play()
             player.health -= self.damage 
             player.hit = True
             player.last_hit = pygame.time.get_ticks()

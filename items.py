@@ -1,6 +1,7 @@
 import constants
 import pygame
 
+
 class Item(pygame.sprite.Sprite):
     def __init__(self,x,y,item_type,animation_list,dummy_item=False):
         pygame.sprite.Sprite.__init__(self)
@@ -13,7 +14,7 @@ class Item(pygame.sprite.Sprite):
         self.rect.center = (x,y)
         self.dummy_item = dummy_item
 
-    def update(self,screen_scroll,player):
+    def update(self,screen_scroll,player,heal_fx,coin_fx):
         """move reletive to camra"""
         if not self.dummy_item:
             self.rect.x += screen_scroll[0]
@@ -24,13 +25,22 @@ class Item(pygame.sprite.Sprite):
         if self.rect.colliderect(player.rect):
              """check what was collected"""
              if self.item_type == constants.COIN:
+                coin_fx.play()
                 player.coins += 1
                 self.kill()
                                 
              elif self.item_type == constants.POTION_RED:
+                heal_fx.play()
                 player.health += 50 
-                if player.health > 100:
+                if player.health > player.max_health:
                     player.health = 100
+                self.kill()
+
+             elif self.item_type == constants.POTION_BLUE:
+                heal_fx.play()
+                player.mana += 50 
+                if player.mana > player.max_mana:
+                    player.mana = 100
                 self.kill()
                 
                 
