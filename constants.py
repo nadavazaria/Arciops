@@ -60,8 +60,9 @@ PUMPKIN = 16
 SLUG = 17 
 SWAMPY = 18
 WOGOL = 19
+WIZARD = 20
 mob_types = ["elf","goblin","imp","muddy","skeleton","tiny_zombie","big_demon","big_zombie","chort","docc","elf_f","goblin_warrior",
-             'goblin_shamen',"Knight","necromancer","pumpkin","slug","swampy","wogol"]
+             'goblin_shamen',"Knight","necromancer","pumpkin","slug","swampy","wogol","wizard"]
 
 """item type constants """
 COIN = 0

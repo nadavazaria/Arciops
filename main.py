@@ -3,18 +3,18 @@ from pygame import mixer
 import math
 from world import World
 import constants
-from character import Player
-from weapon import Weapon,Lightning,Fireball
-from damage_text import  DamageText,font
+from weapon import Weapon
+from damage_text import font
 from items import Item
 from button import Button
-mixer.init()
+from character_select import change_character
 import time 
-pygame.init() 
 import csv
+from images import mob_animations,item_image_list,game_bg,background_image,reaper_image,lightning_animation,bow_image,staff_image,knife_image,knife_throw_image,arrow_image,fireball_image,btn_green_1,btn_green_3,btn_green_2,btn_red_1,btn_red_3,btn_red_2,scale_img,list_of_tiles
+from sound_fx import sound_effects
+mixer.init()
+pygame.init() 
 # create player
-
-
 screen = pygame.display.set_mode((constants.SCREEN_WIDTH,constants.SCREEN_HEIGHT))
 
 pygame.display.set_caption("Arciops")
@@ -35,12 +35,13 @@ moving_left = False
 moving_right = False
 
 class ScreenFade():
+    
     def __init__(self,direction,color,speed):
         self.speed = speed
         self.color = color
         self.direction = direction
         self.fade_counter = 0
-        # self.game_over_screen = False
+
     def fade(self):
         fading  = False
         self.fade_counter += self.speed
@@ -60,121 +61,10 @@ class ScreenFade():
             self.fade_counter = constants.SCREEN_WIDTH
             
         return fading
+    
 def transition(transition):
     screen_fade = ScreenFade(transition,constants.BLACK,10)
     return screen_fade
-    
-def scale_img(image,scale):
-    width = image.get_width()
-    height = image.get_height()
-    return pygame.transform.scale(image,(width*scale,height*scale))
-
-"""load music """
-
-pygame.mixer.music.load("assets/audio/J. Cole - Huntin' Wabbitz.mp3")
-pygame.mixer.music.set_volume(0.3)
-pygame.mixer.music.play(-1,0.0,5000)
-
-shot_fx = pygame.mixer.Sound("assets/audio/arrow_shot.mp3")
-shot_fx.set_volume(0.5)
-hit_fx = pygame.mixer.Sound("assets/audio/arrow_hit.wav")
-monster_death_fx = pygame.mixer.Sound("assets/audio/squeek.wav")
-player_m_hit_fx = pygame.mixer.Sound("assets/audio/player_m_hit.mp3")
-player_m_death_fx = pygame.mixer.Sound("assets/audio/death_sound.wav")
-player_f_hit_fx = pygame.mixer.Sound("assets/audio/player_f_hit.mp3")
-player_f_death_fx = pygame.mixer.Sound("assets/audio/player_f_death.opus")
-walk_1_fx =  pygame.mixer.Sound("assets/audio/walk_1.mp3")
-walk_2_fx =  pygame.mixer.Sound("assets/audio/walk_2.mp3")
-demon_death_fx = pygame.mixer.Sound("assets/audio/demon_death.mp3")
-ogre_death_fx = pygame.mixer.Sound("assets/audio/ogre_death.mp3")
-ogre_roar_fx = pygame.mixer.Sound("assets/audio/ogre_roar.mp3")
-zombie_growl_fx = pygame.mixer.Sound("assets/audio/zombie_growl.mp3")
-coin_fx = pygame.mixer.Sound("assets/audio/coin.wav")
-potion_fx = pygame.mixer.Sound("assets/audio/heal.wav")
-lightning_fx = pygame.mixer.Sound("assets/audio/lightning.wav")
-fire_fx = pygame.mixer.Sound("assets/audio/fire.wav")
-intro_fx = pygame.mixer.Sound("assets/audio/intro_heavy.opus")
-
-sound_effects = {"shot_fx":shot_fx,"hit_fx":hit_fx,"player_m_death_fx":player_m_death_fx,
-                 "player_m_death_fx":player_m_death_fx,
-                 "monster_death_fx":monster_death_fx
-                 ,"demon_death_fx":demon_death_fx,"ogre_death_fx":ogre_death_fx,"ogre_roar_fx":ogre_roar_fx,
-                 "zombie_growl_fx":zombie_growl_fx,"coin_fx":coin_fx,"potion_fx":potion_fx,
-                 "lightning_fx":lightning_fx,"fire_fx":fire_fx,"player_m_hit_fx":player_m_hit_fx,
-                 "player_f_hit_fx":player_f_hit_fx,"player_f_death_fx":player_f_death_fx,"walk_1_fx":walk_1_fx,"walk_2_fx":walk_2_fx}
-
-"""load map tiles"""
-list_of_tiles = []
-for x in range(constants.TILE_TYPES):
-    tile_image = pygame.image.load(f"assets/images/tiles/{x}.png").convert_alpha()
-    tile_image = pygame.transform.scale(tile_image, (constants.TILE_SIZE, constants.TILE_SIZE))
-    list_of_tiles.append(tile_image)
-
-
-"""load the health images"""
-heart_full = scale_img(pygame.image.load("assets/images/items/heart_full.png").convert_alpha(),constants.ITEM_SCALE) 
-heart_half = scale_img(pygame.image.load("assets/images/items/heart_half.png").convert_alpha(),constants.ITEM_SCALE) 
-heart_empty = scale_img(pygame.image.load("assets/images/items/heart_empty.png").convert_alpha(),constants.ITEM_SCALE) 
-
-"""load the items"""
-item_image_list = []
-potion_red = scale_img(pygame.image.load("assets/images/items/potion_red.png").convert_alpha(),constants.POTION_SCALE) 
-
-item_image_list = []
-potion_blue = scale_img(pygame.image.load("assets/images/items/potion_blue.png").convert_alpha(),constants.POTION_SCALE) 
-
-"""load coin animation"""
-coin_amination_list = []
-for i in range(4):
-    coin = scale_img(pygame.image.load(f"assets/images/items/coin_f{i}.png").convert_alpha(),constants.ITEM_SCALE) 
-    coin_amination_list.append(coin)
-    
-"""load button images"""
-btn_green_1 = scale_img(pygame.image.load("assets/images/buttons/button_green_1.png").convert_alpha(),constants.BUTTON_SCALE)
-btn_green_2 = scale_img(pygame.image.load("assets/images/buttons/button_green_2.png").convert_alpha(),constants.BUTTON_SCALE)
-btn_red_1 = scale_img(pygame.image.load("assets/images/buttons/button_red_1.png").convert_alpha(),constants.BUTTON_SCALE)
-btn_red_2 = scale_img(pygame.image.load("assets/images/buttons/button_red_2.png").convert_alpha(),constants.BUTTON_SCALE)
-btn_settings = scale_img(pygame.image.load("assets/images/buttons/button_settings.png").convert_alpha(),constants.BUTTON_SCALE)
-
-"""add the items to the list in in a nested list format similar to the mob images"""
-item_image_list.append(coin_amination_list)
-item_image_list.append([potion_red])
-item_image_list.append([potion_blue])
-
-"""load weapon images"""
-weapon_image  = scale_img(pygame.image.load(f"assets/images/weapons/bow.png").convert_alpha(),constants.WHEAPON_SCALE)
-arrow_image  = scale_img(pygame.image.load(f"assets/images/weapons/arrow.png").convert_alpha(),constants.WHEAPON_SCALE)
-fireball_image = scale_img(pygame.image.load(f"assets/images/weapons/fireball.png").convert_alpha(),constants.WHEAPON_SCALE)
-
-"""load magic images"""
-lightning_animation = []
-for i in range(5):
-    lightning = pygame.image.load(f"assets/images/weapons/lightning/lightning_{i}.png").convert_alpha()
-    lightning_animation.append(lightning)
-
-"""loading the menu images image """
-reaper_image = scale_img(pygame.image.load(f"assets/images/miselanious/grim_reaper.png").convert_alpha(),2)
-background_image = pygame.transform.scale(pygame.image.load(f"assets/images/miselanious/background_image.jpg").convert_alpha(),(800,600))
-game_bg = pygame.transform.scale(pygame.image.load(f"assets/images/miselanious/game_bg.jpg").convert_alpha(),(800,600))
-
-"""loading the mob images"""
-mob_animations = []
-mob_types = ["elf","goblin","imp","muddy","skeleton","tiny_zombie","big_demon","big_zombie","chort","docc","elf_f","goblin_warrior",
-             'goblin_shaman',"Knight","necromancer","ogre","pumpkin","slug","swampy","wogol"]
-for mob in mob_types:
-    animation_list = []
-    animation_types = ["idle","run"]
-    for animation in animation_types:
-        list_of_img = []
-        for i in range(4):
-            img = pygame.image.load(f"assets/images/characters/{mob}/{animation}/{i}.png").convert_alpha()
-            img = scale_img(img,constants.SCALE)
-            list_of_img.append(img)
-        #     print("image added")
-        # print(list_of_img)
-        animation_list.append(list_of_img)
-    mob_animations.append(animation_list)
-
 
 """creating all the object groups """
 world = World()
@@ -188,7 +78,6 @@ score_coin = Item(680,25,constants.COIN,item_image_list,True)
 item_group.add(score_coin)
 screen_fade = transition(1)
 death_fade = transition(2)
-
 gauge_size = (300, 20)  # Width and height of the gauge
 corner_radius = 5  # Radius of the rounded corners
 health_gauge_outline= pygame.Rect((40,5), gauge_size)
@@ -266,23 +155,36 @@ def make_world_data():
 world_data = make_world_data()
 world.process_data(world_data,list_of_tiles,item_image_list,mob_animations,screen,player,sound_effects)
 player = world.player
-bow = Weapon(weapon_image,arrow_image,lightning_animation,world.player)
+weapon = Weapon(bow_image,arrow_image,lightning_animation,world.player)
 
 
 for item in world.item_list:
     item_group.add(item)
 
-start_pos = (constants.SCREEN_WIDTH - 600,constants.SCREEN_HEIGHT//2 )
-restart_pos = (constants.SCREEN_WIDTH- 600  ,constants.SCREEN_HEIGHT//2 + 80)
-resume_pos = (constants.SCREEN_WIDTH- 600  ,constants.SCREEN_HEIGHT//2)
-option_pos = (constants.SCREEN_WIDTH- 600  ,constants.SCREEN_HEIGHT//2 + 90)
-exit_pos = (constants.SCREEN_WIDTH- 600 ,constants.SCREEN_HEIGHT//2 + 180)
 
-start_button = Button(start_pos,[btn_green_2,btn_red_2],start_pos,"start",scale_img)
-exit_button = Button( exit_pos,[btn_green_1,btn_red_1],exit_pos,"exit",scale_img)
+
+
+
+
+
+start_pos = (constants.SCREEN_WIDTH - 635,constants.SCREEN_HEIGHT//2 - 40)
+restart_pos = (constants.SCREEN_WIDTH- 630  ,constants.SCREEN_HEIGHT//2 + 80)
+charecter_pos = (constants.SCREEN_WIDTH- 630  ,constants.SCREEN_HEIGHT//2 + 80 )
+resume_pos = (constants.SCREEN_WIDTH- 630  ,constants.SCREEN_HEIGHT//2)
+option_pos = (constants.SCREEN_WIDTH- 630  ,constants.SCREEN_HEIGHT//2 + 90)
+exit_pos = (constants.SCREEN_WIDTH- 630 ,constants.SCREEN_HEIGHT//2 + 200)
+
+start_button = Button(start_pos,[btn_green_3,btn_red_3],(start_pos[0],start_pos[1]+5),"start",scale_img)
+exit_button = Button( exit_pos,[btn_green_2,btn_red_2],exit_pos,"exit",scale_img)
 options_button = Button( option_pos,[btn_green_1,btn_red_1],option_pos,"options",scale_img)
+charecter_button = Button( charecter_pos,[btn_green_1,btn_red_1],(charecter_pos[0]-5,charecter_pos[1]-5),"charecter",scale_img)
 restart_button = Button( restart_pos,[btn_green_2,btn_red_2],restart_pos,"restart",scale_img)
-resume_button = Button(resume_pos,[btn_green_1,btn_red_1],resume_pos,"resume",scale_img)
+resume_button = Button(resume_pos,[btn_green_3,btn_red_3],resume_pos,"resume",scale_img)
+
+
+
+
+
 
 def render_text_leter_by_leter(text,color,n,delay_s = 0):
     if delay_s >0 : 
@@ -307,12 +209,7 @@ prompt_7 = "of our world"
 """the actual game loop"""
 run = True
 index = 0
-print(- len(prompt_1))
-print(- len(prompt_1)- len(prompt_2))
-print(- len(prompt_1)- len(prompt_2)- len(prompt_3))
-print(- len(prompt_1)- len(prompt_2)- len(prompt_3) - len(prompt_4))
-print(- len(prompt_1)- len(prompt_2)- len(prompt_3) - len(prompt_4)-len(prompt_5) )
-print(- len(prompt_1)- len(prompt_2)- len(prompt_3) - len(prompt_4)-len(prompt_5) - len(prompt_6))
+
 while run:
 
      
@@ -321,8 +218,8 @@ while run:
 
     if start_game == False:
         if pygame.mouse.get_pressed()[0]:
-            index = 600
-        if index < 600:
+            index = 150
+        if index < 150:
             index += 1      
                 
         screen.blit(background_image,(0,0))
@@ -332,6 +229,48 @@ while run:
             start_game = True
         if exit_button.draw(screen):
             run = False
+        if charecter_button.draw(screen):
+            selected_charecter = change_character()
+
+            if selected_charecter == 1: #chose the elf
+                player.animation_list = mob_animations[constants.ELF]
+                player.image = player.animation_list[0][0]
+                player.death_fx = sound_effects["player_m_death_fx"]
+                player.hit_fx = sound_effects["player_m_hit_fx"]
+                player.make_the_difference(100,100,5,20,50)
+                
+            if selected_charecter == 2:# chose the female player
+                player.animation_list = mob_animations[constants.ELF_F]
+                player.image = player.animation_list[0][0]
+                player.death_fx = sound_effects["player_f_death_fx"]
+                player.hit_fx = sound_effects["player_f_hit_fx"]
+                player.mana_regen *= 2
+                
+                player.make_the_difference(100,120,6,15,60)
+                
+            if selected_charecter == 3: #chose the knigt
+                player.animation_list = mob_animations[constants.KNIGHT]
+                player.image = player.animation_list[0][0]
+                player.death_fx = sound_effects["player_m_death_fx"]
+                player.hit_fx = sound_effects["player_m_hit_fx"]
+                weapon.original_image = knife_image
+                weapon.arrow_image = knife_throw_image 
+                player.make_the_difference(130,85,4,35,40)
+
+            if selected_charecter == 4: #chose the wizard
+                print("wizard")
+                player.animation_list = mob_animations[constants.WIZARD]
+                player.image = player.animation_list[0][0]
+                player.death_fx = sound_effects["wizard_death_fx"]
+                player.hit_fx = sound_effects["wizard_hit_fx"]
+                weapon.original_image = staff_image
+                weapon.arrow_image = fireball_image
+                player.mana_regen = 0.03
+                player.make_the_difference(100,200,3,20,70)
+
+
+
+                
         prompt_ln_1 = render_text_leter_by_leter(prompt_1,constants.BLACK,index,0.01)
         prompt_ln_2 = render_text_leter_by_leter(prompt_2,constants.BLACK,index - 27,0.01)
         prompt_ln_3 = render_text_leter_by_leter(prompt_3,constants.BLACK,index - 50,0.01)
@@ -343,11 +282,11 @@ while run:
         # screen.blit(font.render(prompt_1,True,constants.BLACK), (400,150))
         screen.blit(prompt_ln_1, (150,150))
         screen.blit(prompt_ln_2, (310,230))
-        screen.blit(prompt_ln_3, (310,270))
-        screen.blit(prompt_ln_4, (310,310))
-        screen.blit(prompt_ln_5, (310,350))
-        screen.blit(prompt_ln_6, (310,390))
-        screen.blit(prompt_ln_7, (310,430))
+        screen.blit(prompt_ln_3, (305,270))
+        screen.blit(prompt_ln_4, (335,310))
+        screen.blit(prompt_ln_5, (335,350))
+        screen.blit(prompt_ln_6, (327,390))
+        screen.blit(prompt_ln_7, (420,430))
 
         # if index > first_line_len and index < first_line_len + second_line_len + 1:   
         #     prompt_line_2 = font.render(prompt_2[:index-first_line_len], True, constants.BLACK)
@@ -407,14 +346,14 @@ while run:
             for enemy in world.enemy_list:
                 if enemy.alive:
                     enemy.draw(screen)
-            bow.draw(screen)
-            arrow,lightning_magic = bow.update(player)
+            weapon.draw(screen)
+            arrow,lightning_magic = weapon.update(player)
             if arrow:
-                shot_fx.play()
+                sound_effects["shot_fx"].play()
                 arrow_group.add(arrow)
             for arrow in arrow_group:
                 arrow.draw(screen)
-                damage_text = arrow.update(world.enemy_list,screen_scroll,world.obstacle_tiles,monster_death_fx)
+                damage_text = arrow.update(world.enemy_list,screen_scroll,world.obstacle_tiles,sound_effects["monster_death_fx"])
                 if damage_text:
                     damage_text_group.add(damage_text)
             
@@ -422,16 +361,16 @@ while run:
                 lightning_group.add(lightning_magic)
                 
             for lightning in lightning_group:
-                lightning_fx.play()
+                sound_effects["lightning_fx"].play()
                 damage_text = lightning.update(screen,world.enemy_list,screen_scroll)
 
                 if damage_text:
                     damage_text_group.add(damage_text)
 
-            fireball_group.update(player,world.obstacle_tiles,screen_scroll,fire_fx)
+            fireball_group.update(player,world.obstacle_tiles,screen_scroll,sound_effects["fire_fx"])
             damage_text_group.update(screen_scroll)
-            item_group.update(screen_scroll,player,potion_fx,coin_fx)   
-            """this is the shooting function and the bow that fixes itself to the player"""
+            item_group.update(screen_scroll,player,sound_effects["potion_fx"],sound_effects["coin_fx"])   
+            """this is the shooting function and the weapon that fixes itself to the player"""
             
             draw_info()
 
@@ -472,7 +411,7 @@ while run:
                         world_data = make_world_data()
                         
                         world = World()
-                        world.process_data(world_data,list_of_tiles,item_image_list,mob_animations,screen,player,hit_fx,sound_effects)
+                        world.process_data(world_data,list_of_tiles,item_image_list,mob_animations,screen,player,sound_effects)
                         player = world.player
                         player.health = 10
                         player.alive = True
@@ -517,10 +456,10 @@ while run:
                 moving_up = True
            
             if event.key == pygame.K_f:
-                bow.rate_of_fire -= 50
+                weapon.rate_of_fire -= 50
                     
             if event.key == pygame.K_r:
-                bow.rate_of_fire = 300
+                weapon.rate_of_fire = 300
                 
             if event.key == pygame.K_ESCAPE:
                 pause_game = True

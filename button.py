@@ -4,7 +4,7 @@ import constants
 
 class Button():
     def __init__(self,pos,image,text_pos,text,scale_image):
-        self.image = [scale_image(image[0],0.6),scale_image(image[1],0.6)]
+        self.image = [scale_image(image[0],0.743),scale_image(image[1],0.743)]
         self.scale = scale_image
         self.rect = self.image[0].get_rect()
         self.rect.center = pos
@@ -27,5 +27,32 @@ class Button():
             surface.blit(self.text_image,self.text_rect)   
         
         if self.hover and pygame.mouse.get_pressed()[0]:
-            action = True
+            if  pygame.mouse.get_rel()[0]:
+                action = True
+        return action
+
+
+class NoTextButton():
+    def __init__(self,pos,image,scale_image):
+        self.image = [scale_image(image[0],0.743),scale_image(image[1],0.743)]
+        self.scale = scale_image
+        self.rect = self.image[0].get_rect()
+        self.rect.center = pos
+        self.hover = False
+        self.last_clicked = pygame.time.get_ticks()
+
+    def draw(self,surface):
+        action = False
+        pos = pygame.mouse.get_pos()
+
+        self.hover = False
+        if self.rect.collidepoint(pos):
+            self.hover = True
+            surface.blit(self.image[0],self.rect)   
+        else:
+            surface.blit(self.image[1],self.rect)
+        
+        if self.hover and pygame.mouse.get_pressed()[0]:
+            if  pygame.mouse.get_rel()[0]:
+                action = True
         return action

@@ -30,6 +30,7 @@ class Player:
         self.speed = speed
         self.health = health
         self.mana = 100
+        self.mana_regen = 0.01
         self.max_health = 100 
         self.max_mana = 100
         self.damage = 10
@@ -66,7 +67,7 @@ class Player:
             self.alive = False
 
         if self.mana < self.max_mana:
-            self.mana += 0.01
+            self.mana += self.mana_regen
         
         animation_cooldown = 70
         is_runing = 0
@@ -108,7 +109,7 @@ class Player:
         self.rect.y += screen_scroll[1]
 
         """move mobs reletive to camra"""
-        if self.dist_from_player < 1000:
+        if self.dist_from_player < 500:
             clipped_line = ()
             stun_cooldown = 150
             fireball = None
