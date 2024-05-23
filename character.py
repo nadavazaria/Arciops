@@ -7,23 +7,24 @@ from weapon import Fireball
 
 player_charecters = [0,13,10]
 boss_list = [7,15,6]
+ticks = pygame.time.get_ticks
 class Player:
     def __init__(self,x,y,health,mob_animations,char_type,sound_effect,speed):
         self.char_type = char_type
         self.animation_list = mob_animations[self.char_type]
         self.action = "idle"
         self.frame_index = 0
-        self.update_time = pygame.time.get_ticks()
+        self.update_time = ticks()
         self.alive = True
         self.image = self.animation_list[0][self.frame_index]
         self.flip = False
         self.coins = 0
-        self.last_hit = pygame.time.get_ticks()
+        self.last_hit = ticks()
         self.hit = False
         self.stunned = False
         self.chase = False
         self.chase_clooldown = 0
-        self.speciel = pygame.time.get_ticks()
+        self.speciel = ticks()
         self.hit_fx = sound_effect[0]
         self.death_fx = sound_effect[1]
         self.speed = speed
@@ -46,7 +47,9 @@ class Player:
 
     def make_the_difference(self,max_health,max_mana,speed,damage,magic_damage):
         self.max_health = max_health
+        self.health = max_health
         self.max_mana = max_mana
+        self.mana = max_mana
         self.speed = speed
         self.damage = damage
         self.magic_damage = magic_damage
@@ -55,7 +58,7 @@ class Player:
         """am i alive ?"""
         dmg_cooldown = 1000
         
-        if pygame.time.get_ticks() - self.last_hit > dmg_cooldown and self.char_type in player_charecters:
+        if ticks() - self.last_hit > dmg_cooldown and self.char_type in player_charecters:
             self.hit = False
 
         if self.health <= 0:
@@ -74,9 +77,9 @@ class Player:
 
         self.image = self.animation_list[is_runing][self.frame_index]
         
-        if pygame.time.get_ticks() - self.update_time > animation_cooldown:
+        if ticks() - self.update_time > animation_cooldown:
             self.frame_index += 1
-            self.update_time = pygame.time.get_ticks()
+            self.update_time = ticks()
         if self.frame_index >= len(self.animation_list[is_runing]):
             self.frame_index = 0
 
@@ -118,7 +121,7 @@ class Player:
 
 
 
-            if pygame.time.get_ticks() - self.last_hit < stun_cooldown:
+            if ticks() - self.last_hit < stun_cooldown:
                 self.stunned = True
                 self.action = "idle" 
             else:
@@ -135,9 +138,9 @@ class Player:
             """make the chase machanic"""
             if not clipped_line:
                 self.chase = True
-                self.chase_clooldown = pygame.time.get_ticks() + 4000
+                self.chase_clooldown = ticks() + 4000
             
-            if self.chase_clooldown - pygame.time.get_ticks() < 0:
+            if self.chase_clooldown - ticks() < 0:
                 self.chase = False
                 
 
@@ -165,18 +168,18 @@ class Player:
                 else:
                     player.hit_fx.play()
                 player.hit = True
-                player.last_hit = pygame.time.get_ticks()
+                player.last_hit = ticks()
 
 
             """BOSS mechanics"""
             if self.char_type == constants.BIG_DEMON:
-                if pygame.time.get_ticks() - self.speciel > fireball_cooldown:
-                    self.speciel = pygame.time.get_ticks()
+                if ticks() - self.speciel > fireball_cooldown:
+                    self.speciel = ticks()
                     fireball = Fireball(fireball_image,self.rect.centerx,self.rect.centery,player.rect.centerx,player.rect.centery)
             if self.char_type == constants.OGRE:
                 duration = 1500
                 self.damage = 20
-                now = pygame.time.get_ticks()
+                now = ticks()
                 if now - self.speciel > 4000:
                     self.speciel = now + duration
                     self.special_fx.play()

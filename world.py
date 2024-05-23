@@ -160,15 +160,15 @@ class World():
                         self.player = Player(image_x,image_y,100,mob_animations,constants.KNIGHT,player_m_fx,5)
                         self.player.make_the_difference(130,85,4,35,40)
                         tile_data[0] = tile_list[0]
-
                     elif tile == constants.TILE_ELF:
                         self.player = Player(image_x,image_y,100,mob_animations,constants.ELF,player_m_fx,5)
                         self.player.make_the_difference(100,100,5,20,50)
                         tile_data[0] = tile_list[0]
                     elif tile == constants.TILE_ELF_F:
                         self.player = Player(image_x,image_y,100,mob_animations,constants.ELF_F,player_f_fx,5)
-                        self.player.make_the_difference(80,120,6,15,60)
+                        self.player.make_the_difference(100,120,6,15,60)
                         tile_data[0] = tile_list[0]
+                        
                 if tile >= 0: 
                     self.map_tiles.append(tile_data)
                     

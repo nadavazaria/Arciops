@@ -9,6 +9,7 @@ from damage_text import  DamageText,font
 from items import Item
 from button import Button
 mixer.init()
+import time 
 pygame.init() 
 import csv
 # create player
@@ -70,7 +71,7 @@ def scale_img(image,scale):
 
 """load music """
 
-pygame.mixer.music.load("assets/audio/music.wav")
+pygame.mixer.music.load("assets/audio/J. Cole - Huntin' Wabbitz.mp3")
 pygame.mixer.music.set_volume(0.3)
 pygame.mixer.music.play(-1,0.0,5000)
 
@@ -93,7 +94,6 @@ potion_fx = pygame.mixer.Sound("assets/audio/heal.wav")
 lightning_fx = pygame.mixer.Sound("assets/audio/lightning.wav")
 fire_fx = pygame.mixer.Sound("assets/audio/fire.wav")
 intro_fx = pygame.mixer.Sound("assets/audio/intro_heavy.opus")
-
 
 sound_effects = {"shot_fx":shot_fx,"hit_fx":hit_fx,"player_m_death_fx":player_m_death_fx,
                  "player_m_death_fx":player_m_death_fx,
@@ -152,6 +152,10 @@ for i in range(5):
     lightning = pygame.image.load(f"assets/images/weapons/lightning/lightning_{i}.png").convert_alpha()
     lightning_animation.append(lightning)
 
+"""loading the menu images image """
+reaper_image = scale_img(pygame.image.load(f"assets/images/miselanious/grim_reaper.png").convert_alpha(),2)
+background_image = pygame.transform.scale(pygame.image.load(f"assets/images/miselanious/background_image.jpg").convert_alpha(),(800,600))
+game_bg = pygame.transform.scale(pygame.image.load(f"assets/images/miselanious/game_bg.jpg").convert_alpha(),(800,600))
 
 """loading the mob images"""
 mob_animations = []
@@ -216,18 +220,14 @@ def draw_text(text,font,color,x,y):
     screen.blit(img,(x,y))
 
 
+
 def draw_info():
     """draw life the numbers passed to the screen blit is the offset of the hearts"""
     pygame.draw.rect(screen,constants.MENU_BG,(0,0,constants.SCREEN_WIDTH,50))
     pygame.draw.line(screen,constants.WHITE,(0,50),(constants.SCREEN_WIDTH,50))
-    # for i in range(5):
-    #     if player.health >= ((i+1)*20):
-    #         screen.blit(heart_full,(10 + i*50,5))
-    #     elif player.health <= ((i+1)*20) and player.health >((i)*20):
-    #         screen.blit(heart_half,(10 + i*50,5))
-    #     else:screen.blit(heart_empty,(10 + i*50,5))
-    draw_gauge(screen,player.health,constants.RED,health_gauge_outline,10,(40,5))
-    draw_gauge(screen,player.mana,constants.BLUE,mana_gauge_outline,10,(40,25))
+
+    draw_gauge(screen,player.health/player.max_health*100,constants.RED,health_gauge_outline,10,(40,5))
+    draw_gauge(screen,player.mana/player.max_mana*100,constants.BLUE,mana_gauge_outline,10,(40,25))
     """level"""
     draw_text(f"Level: {level}",font,constants.WHITE,400,20)
     draw_text("HP",font,constants.WHITE,5,5)
@@ -258,7 +258,7 @@ def make_world_data():
         reader =csv.reader(csvfile,delimiter=",")
         for row_num,row in enumerate(reader):
             for col_num,tile in enumerate(row):
-                if tile != "-1":
+                if tile[0] != "-":
                     world_data[row_num][col_num] = int(tile)  
 
     return world_data
@@ -272,11 +272,11 @@ bow = Weapon(weapon_image,arrow_image,lightning_animation,world.player)
 for item in world.item_list:
     item_group.add(item)
 
-start_pos = (constants.SCREEN_WIDTH - 600,constants.SCREEN_HEIGHT//2 - 150 )
-restart_pos = (constants.SCREEN_WIDTH- 600  ,constants.SCREEN_HEIGHT//2 - 50)
-resume_pos = (constants.SCREEN_WIDTH- 600  ,constants.SCREEN_HEIGHT//2 - 150)
-option_pos = (constants.SCREEN_WIDTH- 600  ,constants.SCREEN_HEIGHT//2)
-exit_pos = (constants.SCREEN_WIDTH- 600 ,constants.SCREEN_HEIGHT//2 + 150)
+start_pos = (constants.SCREEN_WIDTH - 600,constants.SCREEN_HEIGHT//2 )
+restart_pos = (constants.SCREEN_WIDTH- 600  ,constants.SCREEN_HEIGHT//2 + 80)
+resume_pos = (constants.SCREEN_WIDTH- 600  ,constants.SCREEN_HEIGHT//2)
+option_pos = (constants.SCREEN_WIDTH- 600  ,constants.SCREEN_HEIGHT//2 + 90)
+exit_pos = (constants.SCREEN_WIDTH- 600 ,constants.SCREEN_HEIGHT//2 + 180)
 
 start_button = Button(start_pos,[btn_green_2,btn_red_2],start_pos,"start",scale_img)
 exit_button = Button( exit_pos,[btn_green_1,btn_red_1],exit_pos,"exit",scale_img)
@@ -284,22 +284,79 @@ options_button = Button( option_pos,[btn_green_1,btn_red_1],option_pos,"options"
 restart_button = Button( restart_pos,[btn_green_2,btn_red_2],restart_pos,"restart",scale_img)
 resume_button = Button(resume_pos,[btn_green_1,btn_red_1],resume_pos,"resume",scale_img)
 
+def render_text_leter_by_leter(text,color,n,delay_s = 0):
+    if delay_s >0 : 
+        time.sleep(delay_s)
+    if n < 0 :
+        return font.render("",True,color)
+    elif n < len(text) - 1:
+        return font.render(text[:n],True,color)
+    else:
+        return font.render(text,True,color) 
+
+ 
+prompt_1 = "welcome to a world of magic"
+prompt_2 = "young hero we need you!"
+prompt_3 = "the demon lord has come"
+prompt_4 = "only you can traverse"
+prompt_5 = "the doungeon and slay"
+prompt_6 = "the beast for the sake"
+prompt_7 = "of our world"
+
+
 """the actual game loop"""
 run = True
+index = 0
+print(- len(prompt_1))
+print(- len(prompt_1)- len(prompt_2))
+print(- len(prompt_1)- len(prompt_2)- len(prompt_3))
+print(- len(prompt_1)- len(prompt_2)- len(prompt_3) - len(prompt_4))
+print(- len(prompt_1)- len(prompt_2)- len(prompt_3) - len(prompt_4)-len(prompt_5) )
+print(- len(prompt_1)- len(prompt_2)- len(prompt_3) - len(prompt_4)-len(prompt_5) - len(prompt_6))
 while run:
-   
+
+     
     """initializing the game clock and drawing the charecter and weapon"""
     clock.tick(constants.FPS)
+
     if start_game == False:
-        screen.fill(constants.MENU_BG)
+        if pygame.mouse.get_pressed()[0]:
+            index = 600
+        if index < 600:
+            index += 1      
+                
+        screen.blit(background_image,(0,0))
+        screen.blit(scale_img(font.render("~ARCIOPS~",True,constants.BLACK),3),(140,70))
         # intro_fx.play()
         if start_button.draw(screen):
             start_game = True
         if exit_button.draw(screen):
             run = False
+        prompt_ln_1 = render_text_leter_by_leter(prompt_1,constants.BLACK,index,0.01)
+        prompt_ln_2 = render_text_leter_by_leter(prompt_2,constants.BLACK,index - 27,0.01)
+        prompt_ln_3 = render_text_leter_by_leter(prompt_3,constants.BLACK,index - 50,0.01)
+        prompt_ln_4 = render_text_leter_by_leter(prompt_4,constants.BLACK,index - 73,0.01)
+        prompt_ln_5 = render_text_leter_by_leter(prompt_5,constants.BLACK,index - 94,0.01)
+        prompt_ln_6 = render_text_leter_by_leter(prompt_6,constants.BLACK,index - 115,0.01)
+        prompt_ln_7 = render_text_leter_by_leter(prompt_7,constants.BLACK,index - 137,0.01)
+        
+        # screen.blit(font.render(prompt_1,True,constants.BLACK), (400,150))
+        screen.blit(prompt_ln_1, (150,150))
+        screen.blit(prompt_ln_2, (310,230))
+        screen.blit(prompt_ln_3, (310,270))
+        screen.blit(prompt_ln_4, (310,310))
+        screen.blit(prompt_ln_5, (310,350))
+        screen.blit(prompt_ln_6, (310,390))
+        screen.blit(prompt_ln_7, (310,430))
+
+        # if index > first_line_len and index < first_line_len + second_line_len + 1:   
+        #     prompt_line_2 = font.render(prompt_2[:index-first_line_len], True, constants.BLACK)
+        # else:
+        #     prompt_line_2 = font.render("", True, constants.BLACK)
+        # render_text_letter_by_letter(prompt, screen, font, (100, 100), constants.BLACK, 0.01,n)
     else:
         if pause_game:
-            screen.fill(constants.MENU_BG)
+            screen.blit(background_image,(0,0))
             if exit_button.draw(screen):
                 run = False
             if options_button.draw(screen):
@@ -307,7 +364,8 @@ while run:
             if resume_button.draw(screen):
                 pause_game = False
         else:
-            screen.fill(constants.BLACK)
+            screen.blit(game_bg,(0,0))
+
 
 
             if player.alive:
@@ -389,7 +447,7 @@ while run:
                 world_data = make_world_data()
                 
                 world = World()
-                world.process_data(world_data,list_of_tiles,item_image_list,mob_animations,screen,player,hit_fx,sound_effects)
+                world.process_data(world_data,list_of_tiles,item_image_list,mob_animations,screen,player,sound_effects)
                 player = world.player
 
                 
@@ -398,7 +456,6 @@ while run:
 
                 
             
-            draw_text("this is sumthing",font,constants.RED,constants.SCREEN_WIDTH//2,constants.SCREEN_HEIGHT//1)
             if start_intro:
                 
                 if screen_fade.fade():
@@ -407,6 +464,7 @@ while run:
 
             if not player.alive:
                 if death_fade.fade():
+                    screen.blit(reaper_image,(450,0))
                     if restart_button.draw(screen):
                         death_fade.fade_counter = 0
                         start_intro =True
@@ -445,6 +503,18 @@ while run:
                     
             if event.key == pygame.K_w:
                 moving_up = True
+
+            if event.key == pygame.K_LEFT:
+                moving_left = True
+
+            if event.key == pygame.K_RIGHT:
+                moving_right =True
+                    
+            if event.key == pygame.K_DOWN:
+                moving_down = True
+                    
+            if event.key == pygame.K_UP:
+                moving_up = True
            
             if event.key == pygame.K_f:
                 bow.rate_of_fire -= 50
@@ -470,6 +540,19 @@ while run:
                 moving_down = False
 
             if event.key == pygame.K_w:
+                moving_up = False
+
+            if event.key == pygame.K_LEFT:
+                moving_left = False                
+
+            if event.key == pygame.K_RIGHT:
+                moving_right = False
+
+            if event.key == pygame.K_UP:
+                print("LET GO OF UP ")
+                moving_down = False
+
+            if event.key == pygame.K_DOWN:
                 moving_up = False
 
 
