@@ -3,15 +3,16 @@ import pygame
 pygame.mixer.init()
 
 """load music """
-
-pygame.mixer.music.load("assets/audio/J. Cole - Huntin' Wabbitz.mp3")
-pygame.mixer.music.set_volume(0.3)
-pygame.mixer.music.play(-1,0.0,5000)
+music = pygame.mixer.music 
+music.load("assets/audio/J. Cole - Huntin' Wabbitz.mp3")
+music.set_volume(0.3)
+music.play(-1,0.0,5000)
 
 shot_fx = pygame.mixer.Sound("assets/audio/arrow_shot.mp3")
 shot_fx.set_volume(0.5)
 hit_fx = pygame.mixer.Sound("assets/audio/arrow_hit.wav")
 monster_death_fx = pygame.mixer.Sound("assets/audio/squeek.wav")
+spawn_fx = pygame.mixer.Sound("assets/audio/monster_death.wav")
 player_m_hit_fx = pygame.mixer.Sound("assets/audio/player_m_hit.mp3")
 player_m_death_fx = pygame.mixer.Sound("assets/audio/death_sound.wav")
 player_f_hit_fx = pygame.mixer.Sound("assets/audio/player_f_hit.mp3")
@@ -30,7 +31,8 @@ intro_fx = pygame.mixer.Sound("assets/audio/intro_heavy.opus")
 fireball_fx = pygame.mixer.Sound("assets/audio/fireball_fx.mp3")
 wizard_hit_fx = pygame.mixer.Sound("assets/audio/wizard_hit_fx.opus")
 wizard_death_fx = pygame.mixer.Sound("assets/audio/wizard_death_fx.opus")
-
+spawn_fx.set_volume(0.2)
+buy_item_fx = pygame.mixer.Sound("assets/audio/buy_item.mp3")
 sound_effects = {"shot_fx":shot_fx,"hit_fx":hit_fx,"player_m_death_fx":player_m_death_fx,
                  "player_m_death_fx":player_m_death_fx,
                  "monster_death_fx":monster_death_fx
@@ -38,4 +40,5 @@ sound_effects = {"shot_fx":shot_fx,"hit_fx":hit_fx,"player_m_death_fx":player_m_
                  "zombie_growl_fx":zombie_growl_fx,"coin_fx":coin_fx,"potion_fx":potion_fx,
                  "lightning_fx":lightning_fx,"fire_fx":fire_fx,"player_m_hit_fx":player_m_hit_fx,
                  "player_f_hit_fx":player_f_hit_fx,"player_f_death_fx":player_f_death_fx,"walk_1_fx":walk_1_fx,"walk_2_fx":walk_2_fx,
-                 "fireball_fx":fireball_fx,"wizard_death_fx":wizard_death_fx,"wizard_hit_fx":wizard_hit_fx,"fireball_fx":fireball_fx}
+                 "fireball_fx":fireball_fx,"wizard_death_fx":wizard_death_fx,"wizard_hit_fx":wizard_hit_fx,"fireball_fx":fireball_fx,
+                 "spawn_fx":spawn_fx}

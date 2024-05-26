@@ -26,9 +26,9 @@ heart_empty = scale_img(pygame.image.load("assets/images/items/heart_empty.png")
 """load the items"""
 item_image_list = []
 potion_red = scale_img(pygame.image.load("assets/images/items/potion_red.png").convert_alpha(),constants.POTION_SCALE) 
-
-item_image_list = []
 potion_blue = scale_img(pygame.image.load("assets/images/items/potion_blue.png").convert_alpha(),constants.POTION_SCALE) 
+potion_yellow = scale_img(pygame.image.load("assets/images/items/potion_yellow.png").convert_alpha(),constants.POTION_SCALE) 
+potion_yellow_big = scale_img(pygame.image.load("assets/images/items/potion_yellow_big.png").convert_alpha(),constants.POTION_SCALE) 
 
 """load coin animation"""
 coin_amination_list = []
@@ -36,6 +36,14 @@ for i in range(4):
     coin = scale_img(pygame.image.load(f"assets/images/items/coin_f{i}.png").convert_alpha(),constants.ITEM_SCALE) 
     coin_amination_list.append(coin)
     
+"""add the items to the list in in a nested list format similar to the mob images"""
+item_image_list.append(coin_amination_list)
+item_image_list.append([potion_red])
+item_image_list.append([potion_blue])
+item_image_list.append([potion_yellow])
+item_image_list.append([potion_yellow_big])
+
+
 """load button images"""
 btn_green_1 = scale_img(pygame.image.load("assets/images/buttons/button_green_1.png").convert_alpha(),constants.BUTTON_SCALE)
 btn_green_2 = scale_img(pygame.image.load("assets/images/buttons/button_green_2.png").convert_alpha(),constants.BUTTON_SCALE)
@@ -49,21 +57,24 @@ btn_arrow_left = pygame.transform.flip(scale_img(pygame.image.load("assets/image
 btn_arrow_right_hover = scale_img(pygame.image.load("assets/images/buttons/btn_arrow_right_dark.png").convert_alpha(),0.4)
 btn_arrow_left_hover = pygame.transform.flip(scale_img(pygame.image.load("assets/images/buttons/btn_arrow_right_dark.png").convert_alpha(),0.4),1,0)
 
-"""add the items to the list in in a nested list format similar to the mob images"""
-item_image_list.append(coin_amination_list)
-item_image_list.append([potion_red])
-item_image_list.append([potion_blue])
+"""load shop images"""
+speed_up_image  = pygame.image.load(f"assets/images/miselanious/speed_up.png").convert_alpha()
+mp_up_image  = pygame.image.load(f"assets/images/miselanious/mp_up.png").convert_alpha()
+hp_up_image  = pygame.image.load(f"assets/images/miselanious/hp_up.png").convert_alpha()
+damage_up_image  = pygame.image.load(f"assets/images/miselanious/damage_up.png").convert_alpha()
+att_speed_up_image  = pygame.image.load(f"assets/images/miselanious/arrow_speed_up.png").convert_alpha()
+shop_item_bg =  pygame.transform.scale(pygame.image.load(f"assets/images/miselanious/shop_background.jpg").convert_alpha(),(650,50))
+shop_item_bg_dark =  pygame.transform.scale(pygame.image.load(f"assets/images/miselanious/shop_background_dark.png").convert_alpha(),(650,50))
+
+
 
 """load weapon images"""
-bow_image  = scale_img(pygame.image.load(f"assets/images/weapons/bow.png").convert_alpha(),constants.WHEAPON_SCALE)
 knife_image  = pygame.image.load(f"assets/images/weapons/knife.png").convert_alpha()
 knife_throw_image  = scale_img(pygame.image.load(f"assets/images/weapons/knife_throw.png").convert_alpha(),constants.WHEAPON_SCALE)
 staff_image =  scale_img(pygame.image.load(f"assets/images/weapons/staff_green.png").convert_alpha(),constants.WHEAPON_SCALE)
+bow_image  = scale_img(pygame.image.load(f"assets/images/weapons/bow.png").convert_alpha(),constants.WHEAPON_SCALE)
 arrow_image  = scale_img(pygame.image.load(f"assets/images/weapons/arrow.png").convert_alpha(),constants.WHEAPON_SCALE)
 fireball_image = scale_img(pygame.image.load(f"assets/images/weapons/fireball.png").convert_alpha(),constants.WHEAPON_SCALE)
-"""load the axes"""
-"""load a staff"""
-"""add a wizard"""
 
 """load magic images"""
 lightning_animation = []

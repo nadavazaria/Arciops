@@ -33,14 +33,24 @@ class Item(pygame.sprite.Sprite):
                 heal_fx.play()
                 player.health += 50 
                 if player.health > player.max_health:
-                    player.health = 100
+                    player.health = player.max_health
                 self.kill()
 
              elif self.item_type == constants.POTION_BLUE:
                 heal_fx.play()
                 player.mana += 50 
                 if player.mana > player.max_mana:
-                    player.mana = 100
+                    player.mana = player.max_mana
+                self.kill()
+                
+             elif self.item_type == constants.POTION_YELLOW:
+                heal_fx.play()
+                player.exp += 20 
+                self.kill()
+                
+             elif self.item_type == constants.POTION_YELLOW_BIG:
+                heal_fx.play()
+                player.exp += 50             
                 self.kill()
                 
                 

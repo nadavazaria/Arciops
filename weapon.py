@@ -25,8 +25,8 @@ class Weapon:
         arrow = None
         lightning = None
         self.rect.center = player.rect.center
-        dist_x = -(self.rect.x - pygame.mouse.get_pos()[0])
-        dist_y = (self.rect.y -pygame.mouse.get_pos()[1]) # in pygame the y cords are fliped
+        dist_x = -(player.rect.centerx - pygame.mouse.get_pos()[0])
+        dist_y = (player.rect.centery -pygame.mouse.get_pos()[1]) # in pygame the y cords are fliped
         radian = math.atan2(dist_y,dist_x)
         angle = math.degrees(radian)
         self.angle = angle
@@ -51,7 +51,7 @@ class Weapon:
 class Arrow(pygame.sprite.Sprite):
     def __init__(self,image,x,y,angle,damage):
         pygame.sprite.Sprite.__init__(self)
-
+        
         self.original_img = image
         self.speed = 10
         self.update_time = pygame.time.get_ticks()
@@ -65,7 +65,7 @@ class Arrow(pygame.sprite.Sprite):
     def draw(self,surface): 
         surface.blit(self.image,self.rect.center)
     # def draw(self,surface):
-    def update(self,enemy_list,screen_scroll,obstacle_tiles,monster_death_fx):
+    def update(self,screen_scroll,obstacle_tiles,):
         self.rect.x += screen_scroll[0]
         self.rect.y += screen_scroll[1]
         
@@ -83,22 +83,7 @@ class Arrow(pygame.sprite.Sprite):
         for tile in obstacle_tiles:
             if tile[1].colliderect(self.rect):
                 self.kill()
-        for enemy in enemy_list:
-            damage_text = None
-            
-            if enemy.rect.colliderect(self.rect) and enemy.alive:
-                enemy.hit_fx.play()
-                damage = self.damage + random.randint(-5,5)
-                if enemy.health - damage <= 0:
-                    monster_death_fx.play()
-                enemy.health -= damage
-                enemy.hit = True
-                enemy.last_hit = pygame.time.get_ticks()
-                self.kill()
-                damage_text = DamageText(enemy.rect.centerx,enemy.rect.centery,str(damage),constants.RED)
-                
-                return damage_text
-
+        
 class Lightning(pygame.sprite.Sprite):
     def __init__(self,player,animation):
         pygame.sprite.Sprite.__init__(self)
@@ -111,7 +96,7 @@ class Lightning(pygame.sprite.Sprite):
         self.last_fired = pygame.time.get_ticks()
 
 
-    def update(self,surface,enemy_list,screen_scroll):
+    def update(self,surface,enemy_list,screen_scroll,player):
     
 
         if self.frame_index <= (len(self.animation_list) -1):
@@ -143,6 +128,12 @@ class Lightning(pygame.sprite.Sprite):
                     damage_text = None
                     if enemy.rect.colliderect(self.rect) and enemy.alive:
                         enemy.health -= self.damage
+                        if enemy.health <= 0:
+                            enemy.death_fx.play() 
+                            player.exp += enemy.exp_value
+
+                            # calc drop item 
+
                         damage_text = DamageText(enemy.rect.centerx,enemy.rect.centery,str(self.damage),constants.BLUE)
                         
                         return damage_text
@@ -150,6 +141,8 @@ class Lightning(pygame.sprite.Sprite):
 
         else:
             self.kill()
+    
+
 
 class Fireball(pygame.sprite.Sprite):
     def __init__(self,image,x,y,target_x,target_y):

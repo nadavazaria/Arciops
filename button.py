@@ -33,8 +33,8 @@ class Button():
 
 
 class NoTextButton():
-    def __init__(self,pos,image,scale_image):
-        self.image = [scale_image(image[0],0.743),scale_image(image[1],0.743)]
+    def __init__(self,pos,image,scale_image,scale):
+        self.image = [scale_image(image[0],scale),scale_image(image[1],scale)]
         self.scale = scale_image
         self.rect = self.image[0].get_rect()
         self.rect.center = pos
@@ -53,6 +53,5 @@ class NoTextButton():
             surface.blit(self.image[1],self.rect)
         
         if self.hover and pygame.mouse.get_pressed()[0]:
-            if  pygame.mouse.get_rel()[0]:
-                action = True
-        return action
+            action = True
+            return action

@@ -24,6 +24,7 @@ BLACK = (0,0,0)
 MENU_BG = (50,50,50)
 PINK = (255,0,255)
 WHITE = (255,255,255)
+EXP_COLOR = (165, 210, 4)
 
 """world constatnts """
 SPEED = 5
@@ -68,6 +69,8 @@ mob_types = ["elf","goblin","imp","muddy","skeleton","tiny_zombie","big_demon","
 COIN = 0
 POTION_RED = 1
 POTION_BLUE = 2
+POTION_YELLOW = 3
+POTION_YELLOW_BIG = 4
 
 """tile constants FLOOR and WALL tiles"""
 FLOOR_NEW = 0

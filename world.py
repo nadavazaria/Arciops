@@ -2,6 +2,7 @@ import pygame
 import constants
 from character import Player
 from items import Item
+from monsters import Monster,Spawner
 
 class World():
     def __init__(self):
@@ -10,6 +11,7 @@ class World():
         self.exit_tile = None
         self.item_list = []
         self.enemy_list = []
+        self.spawner_list = []
         self.player = None
         self.ticks = pygame.time.get_ticks() 
 
@@ -23,10 +25,11 @@ class World():
         self.player = player 
         player_m_fx =[self.sound_effects["player_m_hit_fx"],self.sound_effects["player_m_death_fx"]]
         player_f_fx = [self.sound_effects["player_f_hit_fx"],self.sound_effects["player_f_death_fx"]]
-        standard_monster_fx = [self.sound_effects["hit_fx"],self.sound_effects["hit_fx"]]
+        standard_monster_fx = [self.sound_effects["hit_fx"],self.sound_effects["monster_death_fx"]]
         ogre_fx = [self.sound_effects["hit_fx"],self.sound_effects["ogre_death_fx"],self.sound_effects["ogre_roar_fx"]]
         big_demon_fx = [self.sound_effects["hit_fx"],self.sound_effects["demon_death_fx"],self.sound_effects["fire_fx"]]
         big_zombie_fx = [self.sound_effects["hit_fx"],self.sound_effects["zombie_growl_fx"],self.sound_effects["ogre_death_fx"]]
+        spawner_fx = [self.sound_effects["hit_fx"],self.sound_effects["monster_death_fx"],self.sound_effects["spawn_fx"]]
 
         obstacle_list = [constants.WALL,constants.WALL_OOZE,constants.LAVA_WALL,constants.MOSS_WALL,constants.FLAG_BLUE,constants.FLAG_RED,constants.FLAG_GREEN,constants.FLAG_YELLOW]
         boss_list = [constants.TILE_BIG_DEMON,constants.TILE_BIG_ZOMBIE,constants.TILE_OGRE]
@@ -64,71 +67,73 @@ class World():
 
 
                 elif tile == constants.TILE_GOBLIN:
-                    goblin =  Player(image_x,image_y,250,self.mob_animations,constants.GOBLIN,standard_monster_fx,3)
+                    goblin =  Monster(image_x,image_y,250,self.mob_animations,constants.GOBLIN,standard_monster_fx,3,2)
                     tile_data[0] = tile_list[0]
                     self.enemy_list.append(goblin)
                 elif tile == constants.TILE_SKELETON:
-                    skeleton =  Player(image_x ,image_y,100,self.mob_animations,constants.SKELETON,standard_monster_fx,3)
+                    skeleton =  Monster(image_x ,image_y,100,self.mob_animations,constants.SKELETON,standard_monster_fx,3,1)
                     tile_data[0] = tile_list[0]
                     self.enemy_list.append(skeleton)
                 elif tile == constants.TILE_MUDDY:
-                    muddy =  Player(image_x,image_y ,200,self.mob_animations,constants.MUDDY,standard_monster_fx,2)
+                    muddy =  Monster(image_x,image_y ,200,self.mob_animations,constants.MUDDY,standard_monster_fx,2,2)
                     tile_data[0] = tile_list[0]
                     self.enemy_list.append(muddy)
                 elif tile == constants.TILE_TINY_ZOMBIE:
-                    tiny_zombie =  Player(image_x,image_y,150,self.mob_animations,constants.TINY_ZOMBIE,standard_monster_fx,3)
+                    tiny_zombie =  Monster(image_x,image_y,150,self.mob_animations,constants.TINY_ZOMBIE,standard_monster_fx,3,2)
                     tile_data[0] = tile_list[0]
                     self.enemy_list.append(tiny_zombie)
                
                 elif tile == constants.TILE_DOCC:
-                    docc = Player(image_x, image_y, 300, self.mob_animations, constants.DOCC, standard_monster_fx, 3)
+                    docc = Monster(image_x, image_y, 300, self.mob_animations, constants.DOCC, standard_monster_fx, 3,3)
                     tile_data[0] = tile_list[0]
                     self.enemy_list.append(docc)
 
 
                 elif tile == constants.TILE_GOBLIN_WARRIOR:
-                    goblin_warrior = Player(image_x, image_y,350, self.mob_animations, constants.GOBLIN_WARRIOR, standard_monster_fx, 3)
+                    goblin_warrior = Monster(image_x, image_y,350, self.mob_animations, constants.GOBLIN_WARRIOR, standard_monster_fx, 3,5,12)
                     tile_data[0] = tile_list[0]
                     self.enemy_list.append(goblin_warrior)
 
                 elif tile == constants.TILE_GOBLIN_SHAMAN:
-                    goblin_shaman = Player(image_x, image_y, 250, self.mob_animations, constants.GOBLIN_SHAMAN, standard_monster_fx, 3)
+                    goblin_shaman = Spawner(image_x, image_y, 250, self.mob_animations, constants.GOBLIN_SHAMAN, spawner_fx, 2,9,7000,constants.GOBLIN,12)
                     tile_data[0] = tile_list[0]
                     self.enemy_list.append(goblin_shaman)
+                    self.spawner_list.append(goblin_shaman)
  
                 elif tile == constants.TILE_NECROMANCER:
-                    necromancer = Player(image_x, image_y, 300, self.mob_animations, constants.NECROMANCER, standard_monster_fx, 2)
+                    necromancer = Spawner(image_x, image_y, 300, self.mob_animations, constants.NECROMANCER, spawner_fx, 2,12,4000,constants.SKELETON,12)
                     tile_data[0] = tile_list[0]
                     self.enemy_list.append(necromancer)
+                    self.spawner_list.append(necromancer)
 
                 elif tile == constants.TILE_PUMPKIN:
-                    pumpkin = Player(image_x, image_y, 450, self.mob_animations, constants.PUMPKIN, standard_monster_fx, 3)
+                    pumpkin = Monster(image_x, image_y, 450, self.mob_animations, constants.PUMPKIN, standard_monster_fx, 3,9,13)
                     tile_data[0] = tile_list[0]
                     self.enemy_list.append(pumpkin)
 
                 elif tile == constants.TILE_SLUG:
-                    slug = Player(image_x, image_y, 550, self.mob_animations, constants.SLUG, standard_monster_fx, 2)
+                    slug = Monster(image_x, image_y, 550, self.mob_animations, constants.SLUG, standard_monster_fx, 2,12,15)
                     tile_data[0] = tile_list[0]
                     self.enemy_list.append(slug)
 
                 elif tile == constants.TILE_SWAMPY:
-                    swampy = Player(image_x, image_y, 450, self.mob_animations, constants.SWAMPY, standard_monster_fx, 2)
+                    swampy = Monster(image_x, image_y, 450, self.mob_animations, constants.SWAMPY, standard_monster_fx, 2,9,15)
                     tile_data[0] = tile_list[0]
                     self.enemy_list.append(swampy)
                     
                 elif tile == constants.TILE_IMP:
-                    imp =  Player(image_x,image_y,450,self.mob_animations,constants.IMP,standard_monster_fx,4)
+                    imp =  Monster(image_x,image_y,450,self.mob_animations,constants.IMP,standard_monster_fx,4,14,12)
                     tile_data[0] = tile_list[0]
                     self.enemy_list.append(imp)
 
                 elif tile == constants.TILE_WOGOL:
-                    wogol = Player(image_x, image_y, 650, self.mob_animations, constants.WOGOL, standard_monster_fx, 4)
+                    wogol = Monster(image_x, image_y, 650, self.mob_animations, constants.WOGOL, standard_monster_fx, 4,16,15)
                     tile_data[0] = tile_list[0]
                     self.enemy_list.append(wogol)
 
 
                 elif tile == constants.TILE_CHORT:
-                    chort = Player(image_x, image_y, 900, self.mob_animations, constants.CHORT, standard_monster_fx, 3)
+                    chort = Monster(image_x, image_y, 900, self.mob_animations, constants.CHORT, standard_monster_fx, 3,18,15)
                     tile_data[0] = tile_list[0]
                     self.enemy_list.append(chort)
 
@@ -137,15 +142,15 @@ class World():
                 elif tile in boss_list:
                     print("found boss monsters")
                     if tile == constants.TILE_BIG_DEMON:
-                        big_demon =  Player(image_x,image_y,2500,self.mob_animations,constants.BIG_DEMON,big_demon_fx,3)
+                        big_demon =  Monster(image_x,image_y,2500,self.mob_animations,constants.BIG_DEMON,big_demon_fx,3,300,25)
                         tile_data[0] = tile_list[40]
                         self.enemy_list.append(big_demon)
                     if tile == constants.TILE_BIG_ZOMBIE:
-                        big_zombie =  Player(image_x,image_y,2000,self.mob_animations,constants.BIG_ZOMBIE,big_zombie_fx,3)
+                        big_zombie =  Monster(image_x,image_y,2000,self.mob_animations,constants.BIG_ZOMBIE,big_zombie_fx,3,200,20)
                         tile_data[0] = tile_list[0]
                         self.enemy_list.append(big_zombie)
                     if tile == constants.TILE_OGRE:
-                        ogre =  Player(image_x,image_y,1500,self.mob_animations,constants.OGRE,ogre_fx,3)
+                        ogre =  Monster(image_x,image_y,1500,self.mob_animations,constants.OGRE,ogre_fx,3,150,20)
                         tile_data[0] = tile_list[0]
                         self.enemy_list.append(ogre)
                         #this  is specific for player charecters 

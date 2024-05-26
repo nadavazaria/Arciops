@@ -1,4 +1,3 @@
-import pandas as pd
 import constants
 import pygame
 from damage_text import font
@@ -13,16 +12,16 @@ screen = pygame.display.set_mode((constants.SCREEN_WIDTH,constants.SCREEN_HEIGHT
 file_path = 'levels/level1_data.csv'
 def change_character():
    
-    button_left = NoTextButton((80,420),[btn_arrow_left,btn_arrow_left_hover],scale_img)
-    button_right = NoTextButton((290,420),[btn_arrow_right,btn_arrow_right_hover],scale_img)
-    buttom_select = Button((200,500),[btn_red_2,btn_green_2],(200,500),"Select",scale_img)
+    button_left = NoTextButton((80,420),[btn_arrow_left,btn_arrow_left_hover],scale_img,0.743)
+    button_right = NoTextButton((290,420),[btn_arrow_right,btn_arrow_right_hover],scale_img,0.743)
+    button_select = Button((200,500),[btn_red_2,btn_green_2],(200,500),"Select",scale_img)
     current_charecter = 1
 
     """direct the reader to the place the charecter is soppoused to be to make it more efficient"""
     """ make this reqursive to catch mistakes in the initial data {calls itself if the number it was looking for was not found in the csv}"""
     run = True
     while run:
-        click_cooldown = 300
+        click_cooldown = 100
         ticks = pygame.time.get_ticks()
         clock.tick(constants.FPS)
         """add a button to switch between charecters """
@@ -79,7 +78,7 @@ def change_character():
                     current_charecter += 1
                     button_right.last_clicked = ticks
                     print(current_charecter)
-        if buttom_select.draw(screen):
+        if button_select.draw(screen):
             run = False
             return current_charecter
         for event in pygame.event.get():
