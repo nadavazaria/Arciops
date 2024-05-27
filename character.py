@@ -2,12 +2,14 @@ import pygame
 import constants
 import math
 from weapon import Fireball
-
+from sound_fx import sound_effects
 
 
 player_charecters = [0,13,10]
 boss_list = [7,15,6]
 ticks = pygame.time.get_ticks
+walking_sound = [sound_effects["walk_1_fx"],sound_effects["walk_2_fx"]]
+walk_index = 0
 class Player:
     def __init__(self,x,y,health,mob_animations,char_type,sound_effect,speed):
         self.char_type = char_type #
@@ -22,7 +24,7 @@ class Player:
         self.death_fx = sound_effect[1]#
         self.speed = speed#
         self.health = health#
-        self.coins = 100
+        self.coins = 0
         self.speciel = ticks()
         self.last_hit = ticks()
         self.hit = False
@@ -30,14 +32,15 @@ class Player:
         self.mana_regen = 0.01
         self.max_health = 100 
         self.max_mana = 100
-        self.damage = 10
+        self.damage = 50
         self.magic_damage = 50
         self.lv = 1
         self.to_next_lv = 100
         self.exp = 0
         self.rect = pygame.Rect(0,0,constants.TILE_SIZE*0.9,constants.TILE_SIZE*0.9) 
         self.rect.center = (x,y)
-
+        self.walk_sound_played = ticks()
+        self.walking_fx = walking_sound
     """make this include all the diffrences"""
     def make_the_difference(self,max_health,max_mana,speed,damage,magic_damage):
         self.max_health = max_health
@@ -64,10 +67,10 @@ class Player:
 
         if self.exp >= self.to_next_lv:
             self.lv += 1
-            self.exp = 0  
+            self.exp =  self.exp - self.to_next_lv   
             self.to_next_lv *=1.3
             self.damage += int(self.damage*0.3//1)
-            self.magic_damage += int(self.magic_damage*0.1//1)
+            self.magic_damage += int(self.magic_damage*0.3//1)
             self.max_health += 10
             self.max_mana += 5
             
@@ -109,13 +112,23 @@ class Player:
     
     def move(self,dx,dy,obstacle_tiles,exit_tile = None):
         screen_scroll = [0,0]
+        walk_fx_cooldown = 300
         level_complete = False
+        
         
         
         if (dx == 0 and dy == 0):
             self.action = "idle" 
         else:
             self.action = "runing"
+            # if ticks() - self.walk_sound_played  > walk_fx_cooldown:    
+            #     self.walk_sound_played = ticks()
+            #     if self.frame_index == 0 or self.frame_index == 1:
+            #         walk_index = 0
+            #     else:
+            #         walk_index = 1
+            #     self.walking_fx[walk_index].play()
+
         self.update_action(self.action)
 
         if (dx > 0):
@@ -123,7 +136,7 @@ class Player:
 
         if (dx < 0):
             self.flip = True
-        if (dx != 0 & dy != 0):
+        if (dx != 0 and dy != 0):
             dx = dx * math.sqrt(2)/2  
             dy = dy * math.sqrt(2)/2  
 

@@ -3,6 +3,7 @@ import random
 import pygame
 import math
 from damage_text import font,DamageText
+from sound_fx import shot_fx ,fire_fx
 
 class Weapon:
     def __init__(self,image,arrow_image,lightning_animation,player) :
@@ -12,6 +13,7 @@ class Weapon:
         self.last_shot_fired = pygame.time.get_ticks()
         self.rate_of_fire = 300
         self.angle = 0
+        self.shot_fx = shot_fx
         self.damage = 20
         self.image = pygame.transform.rotate(self.original_image,self.angle)
         self.rect = self.image.get_rect()
@@ -60,7 +62,6 @@ class Arrow(pygame.sprite.Sprite):
         self.image = pygame.transform.rotate(self.original_img,self.angle)
         self.rect = self.image.get_rect()
         self.rect.center = (x,y)
-        
 
     def draw(self,surface): 
         surface.blit(self.image,self.rect.center)
@@ -91,56 +92,32 @@ class Lightning(pygame.sprite.Sprite):
         self.player = player
         self.image = self.animation_list[0]
         self.rect = self.image.get_rect()
-        self.damage = player.magic_damage + random.randint(-50,50)
+        self.damage = player.magic_damage 
         self.frame_index = 0
         self.last_fired = pygame.time.get_ticks()
+        self.animation_cooldown = 70
 
 
-    def update(self,surface,enemy_list,screen_scroll,player):
-    
-
+    def update(self,surface):
+        finished = False
         if self.frame_index <= (len(self.animation_list) -1):
-            animation_cooldown = 70
 
             self.rect = self.image.get_rect(center = self.player.rect.center)
-            """assume that the angle is correct and is the angle between the two point
-            with an offset because of the original sprite oriantation """
+            
             start_point = self.player.rect.center 
             end_point = pygame.mouse.get_pos()
-            """make the """
             dx = end_point[0] - start_point[0]
             """this is reversed because pygame and canvas like stuff is stupid"""
             dy = start_point[1] - end_point[1]
-
             self.angle = math.degrees(math.atan2(dy,dx)) + 90
-
             self.image = pygame.transform.rotate(self.animation_list[self.frame_index],self.angle)
-            distance = int(math.hypot(dx, dy))
-
             self.rect.center = (self.player.rect.centerx + 200*math.cos(math.atan2(dy,dx)),self.player.rect.centery - 200*math.sin(math.atan2(dy,dx)))
-
             surface.blit(self.image,self.rect.topleft)
-            if pygame.time.get_ticks() - self.last_fired >= animation_cooldown:
-                self.frame_index += 1
-                self.last_fired = pygame.time.get_ticks()
-                """check collision"""
-                for enemy in enemy_list:
-                    damage_text = None
-                    if enemy.rect.colliderect(self.rect) and enemy.alive:
-                        enemy.health -= self.damage
-                        if enemy.health <= 0:
-                            enemy.death_fx.play() 
-                            player.exp += enemy.exp_value
-
-                            # calc drop item 
-
-                        damage_text = DamageText(enemy.rect.centerx,enemy.rect.centery,str(self.damage),constants.BLUE)
-                        
-                        return damage_text
-
+            finished = True
 
         else:
-            self.kill()
+            finished = False
+        return finished
     
 
 

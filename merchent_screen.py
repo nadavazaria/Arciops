@@ -73,16 +73,13 @@ def confirmation_message():
                     if event.type == pygame.QUIT:
                         pygame.quit()
                     if event.type == pygame.MOUSEBUTTONDOWN:
-                        print("found the button ")
                         clicked = True
         pygame.draw.rect(screen,constants.MENU_BG,(200,100,300,300))
         pygame.draw.rect(screen,constants.WHITE,(200,100,300,50))
         screen.blit(font.render("are you sure?",True,constants.BLACK),(225,110))
         pygame.draw.rect(screen,constants.BLACK,(200,100,300,50),5)
         pygame.draw.rect(screen,constants.BLACK,(200,100,300,300),5)
-        print(clicked)
         if buy_button.draw(screen) and clicked:
-            print("the events overlapp")
             run = False
             return True
 
@@ -178,7 +175,7 @@ def merchent(player,weapon,level):
                 if process_deal(player.coins,price4):
                     player.coins -= price4
                     buy_item_fx.play()
-                    player.speed += 1
+                    player.speed += 0.5
         if upgrade == 4:
             upgrade = -1
             if confirmation_message():

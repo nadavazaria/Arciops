@@ -55,3 +55,39 @@ class NoTextButton():
         if self.hover and pygame.mouse.get_pressed()[0]:
             action = True
             return action
+        
+
+class DragButton():
+    def __init__(self,pos,min,max):
+        self.rect = pygame.rect.Rect(pos[0],pos[1],20,20)
+        self.rect.centerx = pos[0]
+        self.rect.centery = pos[1]
+        self.is_clicked = False
+        self.min = min
+        self.max = max
+        self.distance = max - min
+        self.percentage = (self.rect.centerx - min)/self.distance
+        print(self.max)
+        print(self.min)
+    def drag(self,mouse_pos):
+        
+        if self.rect.collidepoint(mouse_pos) and pygame.mouse.get_pressed()[0]:
+            # print("clicked")
+            self.is_clicked = True
+        else:
+            self.is_clicked = False
+        if self.is_clicked:
+            self.rect.centerx = mouse_pos[0]
+
+        if self.rect.centerx > self.max:
+            self.rect.centerx = self.max
+
+        if self.rect.centerx < self.min:
+            self.rect.centerx = self.min
+
+        self.percentage = (self.rect.centerx - self.min)/self.distance
+
+        return self.percentage
+
+    def draw(self,surface):
+        pygame.draw.rect(surface,constants.MENU_BG,self.rect)

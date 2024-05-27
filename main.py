@@ -1,33 +1,35 @@
 import pygame
-from pygame import mixer
-import math
-from world import World
+import time 
+import csv
 import constants
+import random
+from pygame import mixer
+from world import World
 from weapon import Weapon
 from damage_text import font
 from items import Item
 from button import Button
 from character_select import change_character
 from merchent_screen import merchent
-import time 
-import csv
-import random
+from death_screen import you_died
+from pause_screen import pause
 from damage_text import DamageText
-from images import mob_animations,item_image_list,game_bg,background_image,reaper_image,lightning_animation,bow_image,staff_image,knife_image,knife_throw_image,arrow_image,fireball_image,btn_green_1,btn_green_3,btn_green_2,btn_red_1,btn_red_3,btn_red_2,scale_img,list_of_tiles
+from images import mob_animations,item_image_list,game_bg,background_image,reaper_image,lightning_animation,bow_image,staff_image,knife_image,knife_throw_image,arrow_image,fireball_image,btn_green_1,btn_green_3,btn_green_2,btn_red_1,btn_red_3,btn_red_2,scale_img,list_of_tiles,shuriken_image,energy_ball_image
 from sound_fx import sound_effects, music
 def main():
         
     mixer.init()
     pygame.init() 
     # create the game window
-    screen = pygame.display.set_mode((constants.SCREEN_WIDTH,constants.SCREEN_HEIGHT))
 
+    screen = pygame.display.set_mode((constants.SCREEN_WIDTH,constants.SCREEN_HEIGHT))
+    music.play(-1,0.0,5000)
     pygame.display.set_caption("Arciops")
 
     clock = pygame.time.Clock()
 
     """define the game level"""
-    level = 2
+    level = 1
     start_game = False
     pause_game = False
     screen_scroll = [0,0]
@@ -117,28 +119,12 @@ def main():
         img = font.render(text,True,color)
         screen.blit(img,(x,y))
 
-    def write_paragraph(surface,text,pos,color):
-        collection = [word.split(' ') for word in text.splitlines()]
-        space = font.size(' ')[0]
-        x,y = pos
-        for lines in collection:
-            for words in lines :
-                word_surface = font.render(words,True,color)
-                word_width , word_hiegt  = word_surface.get_size()
-                if x + word_width >=constants.SCREEN_WIDTH:
-                    x = pos[0]
-                    y += 30
-                surface.blit(word_surface,(x,y))
-                x += word_width + space
-            x = pos[0]
-            y += 30
-        pass
-
+    
     def draw_info():
         """draw life the numbers passed to the screen blit is the offset of the hearts"""
 
         text_color = constants.WHITE
-        if player.exp/player.to_next_lv*100//1  > 60:
+        if player.exp/player.to_next_lv*100  > 52:
             text_color = constants.BLACK    
 
         pygame.draw.rect(screen,constants.MENU_BG,(0,0,constants.SCREEN_WIDTH,50))
@@ -199,10 +185,10 @@ def main():
 
 
     start_pos = (constants.SCREEN_WIDTH - 635,constants.SCREEN_HEIGHT//2 - 40)
-    restart_pos = (constants.SCREEN_WIDTH- 630  ,constants.SCREEN_HEIGHT//2 + 80)
     charecter_pos = (constants.SCREEN_WIDTH- 630  ,constants.SCREEN_HEIGHT//2 + 80 )
-    resume_pos = (constants.SCREEN_WIDTH- 630  ,constants.SCREEN_HEIGHT//2)
     option_pos = (constants.SCREEN_WIDTH- 630  ,constants.SCREEN_HEIGHT//2 + 90)
+
+    restart_pos = (constants.SCREEN_WIDTH- 630  ,constants.SCREEN_HEIGHT//2 + 80)
     exit_pos = (constants.SCREEN_WIDTH- 630 ,constants.SCREEN_HEIGHT//2 + 200)
 
 
@@ -212,13 +198,8 @@ def main():
 
 
     restart_button = Button( restart_pos,[btn_green_2,btn_red_2],restart_pos,"restart",scale_img)
-    pause_exit_button = Button( exit_pos,[btn_green_2,btn_red_2],exit_pos,"exit",scale_img)
-    resume_button = Button(resume_pos,[btn_green_3,btn_red_3],resume_pos,"resume",scale_img)
-
-
-    options_button = Button( option_pos,[btn_green_1,btn_red_1],option_pos,"options",scale_img)
-
-    def cacl_damage(arrow):
+    
+    def calc_arrow_damage(arrow):
         arrow.draw(screen)
         arrow.update(screen_scroll,world.obstacle_tiles)
         for enemy in world.enemy_list:
@@ -237,6 +218,29 @@ def main():
                 damage_text = DamageText(enemy.rect.centerx,enemy.rect.centery,str(damage),constants.RED)   
                 break
         return damage_text
+
+    def calc_lightning_damage(lightning):
+        animation_finished = lightning.update(screen)
+        if animation_finished:
+            if pygame.time.get_ticks() - lightning.last_fired >= lightning.animation_cooldown:
+                lightning.frame_index += 1
+                lightning.last_fired = pygame.time.get_ticks()
+                """check collision"""
+                for enemy in world.enemy_list:
+                    damage_text = None
+                    if enemy.rect.colliderect(lightning.rect) and enemy.alive:
+                        damage = int(lightning.damage -50 +100*random.random())
+                        if enemy.health - damage<= 0:
+                            enemy.death_fx.play()                             
+                            player.exp += enemy.exp_value
+                            drop_item(enemy.rect.centerx,enemy.rect.centery)
+
+                        enemy.health -= damage
+                        damage_text = DamageText(enemy.rect.centerx,enemy.rect.centery,str(damage),constants.BLUE)
+                        return damage_text
+        else:
+            lightning.kill()
+
     def drop_item(x,y):
         drop = False
         if random.random()> 0.95:
@@ -283,7 +287,7 @@ def main():
     while run:
 
         
-        """initializing the game clock and drawing the charecter and weapon"""
+        """initializing the game clock and drawing the main menu"""
         clock.tick(constants.FPS)
 
         if start_game == False:
@@ -307,7 +311,7 @@ def main():
                     player.image = player.animation_list[0][0]
                     player.death_fx = sound_effects["player_m_death_fx"]
                     player.hit_fx = sound_effects["player_m_hit_fx"]
-                    player.make_the_difference(100,100,5,20,50)
+                    player.make_the_difference(100,100,5,25,50)
                     
                 if selected_charecter == 2:# chose the female player
                     player.animation_list = mob_animations[constants.ELF_F]
@@ -316,7 +320,7 @@ def main():
                     player.hit_fx = sound_effects["player_f_hit_fx"]
                     player.mana_regen *= 2
                     
-                    player.make_the_difference(100,120,6,15,60)
+                    player.make_the_difference(100,120,5.5,20,60)
                     
                 if selected_charecter == 3: #chose the knigt
                     player.animation_list = mob_animations[constants.KNIGHT]
@@ -325,7 +329,7 @@ def main():
                     player.hit_fx = sound_effects["player_m_hit_fx"]
                     weapon.original_image = knife_image
                     weapon.arrow_image = knife_throw_image 
-                    player.make_the_difference(130,85,4,35,40)
+                    player.make_the_difference(130,85,4,30,40)
 
                 if selected_charecter == 4: #chose the wizard
                     print("wizard")
@@ -334,9 +338,11 @@ def main():
                     player.death_fx = sound_effects["wizard_death_fx"]
                     player.hit_fx = sound_effects["wizard_hit_fx"]
                     weapon.original_image = staff_image
-                    weapon.arrow_image = fireball_image
+                    weapon.arrow_image = energy_ball_image
+                    weapon.shot_fx = sound_effects["fireball_fx"]
+
                     player.mana_regen = 0.03
-                    player.make_the_difference(100,200,3,20,70)
+                    player.make_the_difference(100,200,3,25,90)
 
 
 
@@ -365,13 +371,17 @@ def main():
             # render_text_letter_by_letter(prompt, screen, font, (100, 100), constants.BLACK, 0.01,n)
         else:
             if pause_game:
-                screen.blit(background_image,(0,0))
-                if pause_exit_button.draw(screen):
-                    run = False
-                if options_button.draw(screen):
-                    print("otions")   
-                if resume_button.draw(screen):
+                action = pause()
+                # actions 1 - resume  ,2
+                if action == 1:
                     pause_game = False
+                if action == 2:
+                    run = False
+                if action == 3:
+                    music.unload()
+                    music.load("assets/audio/J. Cole - Huntin' Wabbitz.mp3")
+                    main()
+                    
             else:
                 screen.blit(game_bg,(0,0))
 
@@ -382,8 +392,9 @@ def main():
                     dy = 0
                     
                     """ trnaslate the events into actions """
+
                     if moving_up:
-                        dy = -player.speed
+                        dy = -player.speed          
                     if moving_down:
                         dy = player.speed
                     if moving_left:
@@ -414,7 +425,8 @@ def main():
                             new_mob = spawner.spawn()
                             if new_mob:
                                 world.enemy_list.append(new_mob)
-
+                                if new_mob.char_type == constants.NECROMANCER:
+                                    world.spawner_list.append(new_mob)
                 world.draw(screen)
                 player.draw(screen)    
                 for enemy in world.enemy_list:
@@ -423,22 +435,21 @@ def main():
                 weapon.draw(screen)
                 arrow,lightning_magic = weapon.update(player)
                 if arrow:
-                    sound_effects["shot_fx"].play()
+                    weapon.shot_fx.play()
                     arrow_group.add(arrow)
                 for arrow in arrow_group:
-                    damage_text = cacl_damage(arrow)
+                    damage_text = calc_arrow_damage(arrow)
                     if damage_text:
                         damage_text_group.add(damage_text)
                 
                 if lightning_magic:
-                    lightning_group.add(lightning_magic)
-                    
-                for lightning in lightning_group:
                     sound_effects["lightning_fx"].play()
-                    damage_text = lightning.update(screen,world.enemy_list,screen_scroll,player)
-
-                    if damage_text:
-                        damage_text_group.add(damage_text)
+                    lightning_group.add(lightning_magic)
+                for lightning in lightning_group:
+                        damage_text = calc_lightning_damage(lightning)
+                    # damage_text = calc_lightning_damage(lightning)
+                        if damage_text:
+                            damage_text_group.add(damage_text)
 
                 fireball_group.update(player,world.obstacle_tiles,screen_scroll,sound_effects["fire_fx"])
                 damage_text_group.update(screen_scroll)
@@ -493,22 +504,23 @@ def main():
 
                 if not player.alive:
                     if death_fade.fade():
-                        screen.blit(reaper_image,(450,0))
-                        if restart_button.draw(screen):
+                        action = you_died(player)
+                        if action == 0:
+                            run = False
+                        if action == 1:
+                            main()
+                        if action == 2:
                             death_fade.fade_counter = 0
                             start_intro =True
                             level = 1
                             world_data = make_world_data()
-                            
                             world = World()
                             world.process_data(world_data,list_of_tiles,item_image_list,mob_animations,screen,player,sound_effects)
                             player = world.player
-                            player.health = 10
+                            player.health = 30
                             player.alive = True
                             for item in world.item_list:
                                 item_group.add(item)
-                        if main_exit_button.draw(screen):
-                            run = False
 
 
 

@@ -2,7 +2,7 @@ import pygame
 import constants
 import math
 from weapon import Fireball
-
+from sound_fx import summon_fx,monster_death_fx
 
 
 player_charecters = [0,13,10]
@@ -88,7 +88,7 @@ class Monster:
         """move mobs reletive to camra"""
         if self.dist_from_player < 500:
             clipped_line = ()
-            stun_cooldown = 150
+            stun_cooldown = 100
             fireball = None
             fireball_cooldown = 700
 
@@ -225,7 +225,10 @@ class Spawner(Monster):
 
         if ticks() - self.last_spawn > self.spawn_delay and self.dist_from_player < 600:
             self.stunned = True
-            new_monster = Monster(self.rect.centerx,self.rect.centery,250,self.mob_animations,self.spawned_mob,[self.hit_fx,self.death_fx],3,3)
+            if self.spawned_mob in [constants.NECROMANCER,constants.GOBLIN_SHAMAN]:
+                new_monster = Spawner(self.rect.centerx,self.rect.centery,250,self.mob_animations,self.spawned_mob,[self.hit_fx,monster_death_fx,summon_fx],3,3,4000,constants.SKELETON)
+            else:    
+                new_monster = Monster(self.rect.centerx,self.rect.centery,250,self.mob_animations,self.spawned_mob,[self.hit_fx,self.death_fx],3,3)
             self.special_fx.play()
             self.last_spawn = ticks()
 

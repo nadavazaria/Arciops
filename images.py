@@ -75,6 +75,8 @@ staff_image =  scale_img(pygame.image.load(f"assets/images/weapons/staff_green.p
 bow_image  = scale_img(pygame.image.load(f"assets/images/weapons/bow.png").convert_alpha(),constants.WHEAPON_SCALE)
 arrow_image  = scale_img(pygame.image.load(f"assets/images/weapons/arrow.png").convert_alpha(),constants.WHEAPON_SCALE)
 fireball_image = scale_img(pygame.image.load(f"assets/images/weapons/fireball.png").convert_alpha(),constants.WHEAPON_SCALE)
+energy_ball_image = scale_img(pygame.image.load(f"assets/images/weapons/energy_ball.png").convert_alpha(),constants.WHEAPON_SCALE)
+shuriken_image = scale_img(pygame.image.load(f"assets/images/weapons/Shuriken.png").convert_alpha(),constants.WHEAPON_SCALE)
 
 """load magic images"""
 lightning_animation = []
