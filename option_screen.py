@@ -1,8 +1,3 @@
-"""control volume """
-
-"""game volume control with a knob that goes left and right and a button to murte with indication """
-"""charecter volume  control with a knob that goes left and right and a button to murte with indication """
-"""mob volume control with a knob that goes left and right and a button to murte with indication """
 import pygame
 from sound_fx import player_sfx,monster_stx,game_sound, music
 import constants
@@ -10,24 +5,29 @@ from damage_text import font
 from button import Button,DragButton
 from images import background_image,btn_green_2,btn_red_2,scale_img
 
+"""control volume """
+
+"""game volume control with a knob that goes left and right and a button to murte with indication """
+"""charecter volume  control with a knob that goes left and right and a button to murte with indication """
+"""mob volume control with a knob that goes left and right and a button to murte with indication """
 
 
 pygame.init()
 screen = pygame.display.set_mode((constants.SCREEN_WIDTH,constants.SCREEN_HEIGHT))
 
-def draw_gauge(surface, percentage,color,rect,radius,pos,gauge_size):
-    # Ensure percentage is within 0-100 range
-    percentage = max(0, min(100, percentage))
+# def draw_gauge(surface, percentage,color,rect,radius,pos,gauge_size):
+#     # Ensure percentage is within 0-100 range
+#     percentage = max(0, min(100, percentage))
     
-    # Calculate the width of the filled part of the gauge
-    fill_width = (percentage / 100) * gauge_size[0]
-    """draw the outline"""
-    pygame.draw.rect(surface, constants.BLACK, rect.inflate(-2 * radius, 0), border_radius=radius)
-    pygame.draw.rect(surface, constants.BLACK, rect.inflate(0, -2 * radius), border_radius=radius)
-    # Draw the filled part of the gauge
-    if fill_width > 0:
-        fill_rect = pygame.Rect(pos[0], pos[1] + 3, fill_width, gauge_size[1] - 3)
-        draw_rounded_rect(surface, fill_rect, color, corner_radius)
+#     # Calculate the width of the filled part of the gauge
+#     fill_width = (percentage / 100) * gauge_size[0]
+#     """draw the outline"""
+#     pygame.draw.rect(surface, constants.BLACK, rect.inflate(-2 * radius, 0), border_radius=radius)
+#     pygame.draw.rect(surface, constants.BLACK, rect.inflate(0, -2 * radius), border_radius=radius)
+#     # Draw the filled part of the gauge
+#     if fill_width > 0:
+#         fill_rect = pygame.Rect(pos[0], pos[1] + 3, fill_width, gauge_size[1] - 3)
+#         draw_rounded_rect(surface, fill_rect, color, corner_radius)
 
 def draw_rounded_rect(surface, rect, color, radius):
     pygame.draw.rect(surface, color, rect.inflate(-2 * radius, 0), border_radius=radius)
