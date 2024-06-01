@@ -14,7 +14,7 @@ class Weapon:
         self.rate_of_fire = 300
         self.angle = 0
         self.shot_fx = shot_fx
-        self.damage = 20
+        self.damage = 25
         self.image = pygame.transform.rotate(self.original_image,self.angle)
         self.rect = self.image.get_rect()
         self.rect.center = player.rect.center

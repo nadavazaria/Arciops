@@ -67,8 +67,7 @@ class DragButton():
         self.max = max
         self.distance = max - min
         self.percentage = (self.rect.centerx - min)/self.distance
-        print(self.max)
-        print(self.min)
+       
     def drag(self,mouse_pos):
         
         if self.rect.collidepoint(mouse_pos) and pygame.mouse.get_pressed()[0]:

@@ -53,6 +53,11 @@ class Item(pygame.sprite.Sprite):
                 player.exp += 50             
                 self.kill()
                 
+             elif self.item_type == constants.KEY:
+                coin_fx.play()
+                player.keys += 1             
+                self.kill()
+                
                 
         
         animation_cooldown = 150
@@ -64,5 +69,39 @@ class Item(pygame.sprite.Sprite):
         if pygame.time.get_ticks() - self.timer > animation_cooldown:
                 self.frame_index += 1
                 self.timer = pygame.time.get_ticks()
+    def draw(self,surface):
+        surface.blit(self.image,self.rect.center)
+
+
+
+class Door():
+    def __init__(self,x,y,door_image):
+        self.images = door_image
+        self.open = False
+        self.image = self.images[0]
+        self.rect = self.image.get_rect()
+        self.rect.center = (x -24,y-24)
+
+    def update(self,screen_scroll,player):
+        """move reletive to camra"""
+        self.rect.x += screen_scroll[0]
+        self.rect.y += screen_scroll[1]
+    
+        """check if colected by the player"""
+        
+        if self.rect.colliderect(player.rect):
+            if not self.open:
+                if player.keys > 0:    
+                    self.open = True
+                    player.keys -= 1
+                    self.image = self.images[1]
+                else:
+                    """the door is very dumb and only bounces the player down"""
+                    print("collision")
+                    player.rect.top = self.rect.bottom 
+
+             
+        
+
     def draw(self,surface):
         surface.blit(self.image,self.rect.center)

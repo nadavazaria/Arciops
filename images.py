@@ -18,10 +18,12 @@ for x in range(constants.TILE_TYPES):
     list_of_tiles.append(tile_image)
 
 
-"""load the health images"""
-heart_full = scale_img(pygame.image.load("assets/images/items/heart_full.png").convert_alpha(),constants.ITEM_SCALE) 
-heart_half = scale_img(pygame.image.load("assets/images/items/heart_half.png").convert_alpha(),constants.ITEM_SCALE) 
-heart_empty = scale_img(pygame.image.load("assets/images/items/heart_empty.png").convert_alpha(),constants.ITEM_SCALE) 
+"""load door image"""
+door_closed = pygame.transform.scale(pygame.image.load("assets/images/miselanious/door_closed.png").convert_alpha(), (constants.TILE_SIZE, constants.TILE_SIZE)) 
+door_open = pygame.transform.scale(pygame.image.load("assets/images/miselanious/door_open.png").convert_alpha(), (constants.TILE_SIZE, constants.TILE_SIZE)) 
+
+
+
 
 """load the items"""
 item_image_list = []
@@ -30,11 +32,16 @@ potion_blue = scale_img(pygame.image.load("assets/images/items/potion_blue.png")
 potion_yellow = scale_img(pygame.image.load("assets/images/items/potion_yellow.png").convert_alpha(),constants.POTION_SCALE) 
 potion_yellow_big = scale_img(pygame.image.load("assets/images/items/potion_yellow_big.png").convert_alpha(),constants.POTION_SCALE) 
 
-"""load coin animation"""
+"""load coin and key animation"""
 coin_amination_list = []
 for i in range(4):
     coin = scale_img(pygame.image.load(f"assets/images/items/coin_f{i}.png").convert_alpha(),constants.ITEM_SCALE) 
     coin_amination_list.append(coin)
+    
+key_amination_list = []
+for i in range(4):
+    key = scale_img(pygame.image.load(f"assets/images/items/key_f{i}.png").convert_alpha(),constants.WHEAPON_SCALE) 
+    key_amination_list.append(key)
     
 """add the items to the list in in a nested list format similar to the mob images"""
 item_image_list.append(coin_amination_list)
@@ -42,6 +49,7 @@ item_image_list.append([potion_red])
 item_image_list.append([potion_blue])
 item_image_list.append([potion_yellow])
 item_image_list.append([potion_yellow_big])
+item_image_list.append(key_amination_list)
 
 
 """load button images"""

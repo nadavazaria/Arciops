@@ -1,20 +1,17 @@
-import pygame
-import time 
-import csv
-import constants
-import random
+import pygame, asyncio,time,csv,constants,random
+from damage_text import DamageText
 from pygame import mixer
 from world import World
 from weapon import Weapon
-from damage_text import font
 from items import Item
 from button import Button
+from damage_text import font
 from character_select import change_character
 from merchent_screen import merchent
 from death_screen import you_died
+from finish_screen import fin
 from pause_screen import pause
-from damage_text import DamageText
-from images import mob_animations,item_image_list,game_bg,background_image,reaper_image,lightning_animation,bow_image,staff_image,knife_image,knife_throw_image,arrow_image,fireball_image,btn_green_1,btn_green_3,btn_green_2,btn_red_1,btn_red_3,btn_red_2,scale_img,list_of_tiles,shuriken_image,energy_ball_image
+from images import mob_animations,item_image_list,game_bg,background_image,lightning_animation,bow_image,staff_image,knife_image,knife_throw_image,arrow_image,fireball_image,btn_green_1,btn_green_3,btn_green_2,btn_red_1,btn_red_3,btn_red_2,scale_img,list_of_tiles,shuriken_image,energy_ball_image
 from sound_fx import sound_effects, music
 def main():
         
@@ -29,7 +26,7 @@ def main():
     clock = pygame.time.Clock()
 
     """define the game level"""
-    level = 1
+    level = 13
     start_game = False
     pause_game = False
     screen_scroll = [0,0]
@@ -170,7 +167,7 @@ def main():
         return world_data
 
     world_data = make_world_data()
-    world.process_data(world_data,list_of_tiles,item_image_list,mob_animations,screen,player,sound_effects)
+    world.process_data(world_data,list_of_tiles,item_image_list,mob_animations,screen,player,sound_effects,level)
     player = world.player
     weapon = Weapon(bow_image,arrow_image,lightning_animation,world.player)
 
@@ -202,15 +199,15 @@ def main():
     def calc_arrow_damage(arrow):
         arrow.draw(screen)
         arrow.update(screen_scroll,world.obstacle_tiles)
+        damage_text = None
         for enemy in world.enemy_list:
-            damage_text = None
             if enemy.rect.colliderect(arrow.rect) and enemy.alive:
                 enemy.hit_fx.play()
                 damage = int(arrow.damage - 5 + random.random()*10//1)
                 if enemy.health - damage <= 0:
                     enemy.death_fx.play()
                     player.exp += enemy.exp_value
-                    drop_item(enemy.rect.centerx,enemy.rect.centery)
+                    drop_item(enemy.rect.centerx,enemy.rect.centery,enemy.char_type)
                 enemy.health -= damage
                 enemy.hit = True
                 enemy.last_hit = pygame.time.get_ticks()
@@ -226,14 +223,14 @@ def main():
                 lightning.frame_index += 1
                 lightning.last_fired = pygame.time.get_ticks()
                 """check collision"""
+                damage_text = None
                 for enemy in world.enemy_list:
-                    damage_text = None
                     if enemy.rect.colliderect(lightning.rect) and enemy.alive:
                         damage = int(lightning.damage -50 +100*random.random())
                         if enemy.health - damage<= 0:
                             enemy.death_fx.play()                             
                             player.exp += enemy.exp_value
-                            drop_item(enemy.rect.centerx,enemy.rect.centery)
+                            drop_item(enemy.rect.centerx,enemy.rect.centery,enemy.char_type)
 
                         enemy.health -= damage
                         damage_text = DamageText(enemy.rect.centerx,enemy.rect.centery,str(damage),constants.BLUE)
@@ -241,9 +238,12 @@ def main():
         else:
             lightning.kill()
 
-    def drop_item(x,y):
+    def drop_item(x,y,char_type):
+        if char_type in [constants.BIG_DEMON,constants.BIG_ZOMBIE,constants.OGRE]:
+            key = Item(x,y,constants.KEY,item_image_list)
+            item_group.add(key)
         drop = False
-        if random.random()> 0.95:
+        if random.random() >= 0.93:
             drop = True
         if drop: 
             item = random.random()
@@ -269,7 +269,26 @@ def main():
             return font.render(text[:n],True,color)
         else:
             return font.render(text,True,color) 
-
+        
+    def music_fade_out(file_path):
+        music.fadeout(1000)
+        music.unload()
+        music.load(file_path)
+        music.play(-1,0.0,5000)
+    def make_the_difference(char_type,max_health,max_mana,speed,damage,magic_damage,sound_effect,weapon_image,arrow_image):
+        player.max_health = max_health
+        player.animation_list = mob_animations[char_type]
+        player.image = player.animation_list[0][0]
+        player.hit_fx = sound_effect[0]
+        player.death_fx = sound_effect[1]
+        weapon.original_image = weapon_image
+        weapon.arrow_image = arrow_image
+        player.health = max_health
+        player.max_mana = max_mana
+        player.mana = max_mana
+        player.speed = speed
+        player.damage = damage
+        player.magic_damage = magic_damage
     
     prompt_1 = "welcome to a world of magic"
     prompt_2 = "young hero we need you!"
@@ -291,6 +310,7 @@ def main():
         clock.tick(constants.FPS)
 
         if start_game == False:
+            selected_charecter = 1
             if pygame.mouse.get_pressed()[0]:
                 index = 150
             if index < 150:
@@ -307,42 +327,18 @@ def main():
                 selected_charecter = change_character()
 
                 if selected_charecter == 1: #chose the elf
-                    player.animation_list = mob_animations[constants.ELF]
-                    player.image = player.animation_list[0][0]
-                    player.death_fx = sound_effects["player_m_death_fx"]
-                    player.hit_fx = sound_effects["player_m_hit_fx"]
-                    player.make_the_difference(100,100,5,25,50)
-                    
+                    make_the_difference(constants.ELF,100,100,5,25,50,[sound_effects["player_m_hit_fx"],sound_effects["player_m_death_fx"]],bow_image,arrow_image)                    
                 if selected_charecter == 2:# chose the female player
-                    player.animation_list = mob_animations[constants.ELF_F]
-                    player.image = player.animation_list[0][0]
-                    player.death_fx = sound_effects["player_f_death_fx"]
-                    player.hit_fx = sound_effects["player_f_hit_fx"]
-                    player.mana_regen *= 2
-                    
-                    player.make_the_difference(100,120,5.5,20,60)
+                    make_the_difference(constants.ELF_F,80,120,5.5,20,60,[sound_effects["player_f_hit_fx"],sound_effects["player_f_death_fx"]],bow_image,shuriken_image)                    
+                    player.mana_regen = 2*player.mana_regen
                     
                 if selected_charecter == 3: #chose the knigt
-                    player.animation_list = mob_animations[constants.KNIGHT]
-                    player.image = player.animation_list[0][0]
-                    player.death_fx = sound_effects["player_m_death_fx"]
-                    player.hit_fx = sound_effects["player_m_hit_fx"]
-                    weapon.original_image = knife_image
-                    weapon.arrow_image = knife_throw_image 
-                    player.make_the_difference(130,85,4,30,40)
+                    make_the_difference(constants.KNIGHT,130,80,4.5,30,40,[sound_effects["player_m_hit_fx"],sound_effects["player_m_death_fx"]],knife_image,knife_throw_image)                    
 
                 if selected_charecter == 4: #chose the wizard
-                    print("wizard")
-                    player.animation_list = mob_animations[constants.WIZARD]
-                    player.image = player.animation_list[0][0]
-                    player.death_fx = sound_effects["wizard_death_fx"]
-                    player.hit_fx = sound_effects["wizard_hit_fx"]
-                    weapon.original_image = staff_image
-                    weapon.arrow_image = energy_ball_image
+                    make_the_difference(constants.WIZARD,90,160,4,25,70,[sound_effects["wizard_hit_fx"],sound_effects["wizard_death_fx"]],staff_image,energy_ball_image)                    
                     weapon.shot_fx = sound_effects["fireball_fx"]
-
-                    player.mana_regen = 0.03
-                    player.make_the_difference(100,200,3,25,90)
+                    player.mana_regen = 3*player.mana_regen
 
 
 
@@ -406,13 +402,15 @@ def main():
                 
                     lightning_magic =None
                     fireball = None     
-                    screen_scroll,level_complete = player.move(dx,dy,world.obstacle_tiles,world.exit_tile)
+                    screen_scroll,level_complete = player.move(dx,dy,world.obstacle_tiles,world.list_of_doors,world.exit_tile)
 
                     """updateing the objects and the world data """
                     world.update(screen_scroll)
                     player.update() 
                     
                         
+                    for door in world.list_of_doors:
+                        door.update(screen_scroll,player)
                     for enemy in world.enemy_list:
                         if enemy.alive:
                             fireball = enemy.enemy_movement(player,world.obstacle_tiles,screen_scroll,fireball_image)
@@ -428,6 +426,8 @@ def main():
                                 if new_mob.char_type == constants.NECROMANCER:
                                     world.spawner_list.append(new_mob)
                 world.draw(screen)
+                for door in world.list_of_doors:
+                    door.draw(screen)
                 player.draw(screen)    
                 for enemy in world.enemy_list:
                     if enemy.alive:
@@ -470,24 +470,24 @@ def main():
                     moving_right =False
                     moving_left = False
                     moving_up = False
-                    merchent(player,weapon,level)
+                    song_list = ["Dance With The Devil","Avenged Sevenfold - Nightmare","Blow Me Away","Shepherd Of Fire"]
+
+                    if level%2 == 1:merchent(player,weapon,level)
                     level += 1
                     world_data = make_world_data()
 
-                    if level == 3:
-                        # ititiate the merchent screen 
-                        music.fadeout(1000)
-                        music.unload()
-                        music.load("assets/audio/Avenged Sevenfold - Nightmare.mp3")
-                        music.play(-1,0.0,5000)
-                    if level == 6:
-                        # ititiate the merchent screen 
-                        music.fadeout(1000)
-                        music.unload()
-                        music.load("assets/audio/Dance With The Devil.mp3")
-                        music.play(-1,0.0,5000)
+                    if level % 3 == 0:
+                        music_fade_out(f"assets/audio/{song_list[int(level/3 - 1)]}.mp3")
+
+                    if level == 13:
+                        action = fin()
+                        if action == 1:
+                            music.unload()
+                            music.load("assets/audio/J. Cole - Huntin' Wabbitz.mp3")
+                            main()
+
                     world = World()
-                    world.process_data(world_data,list_of_tiles,item_image_list,mob_animations,screen,player,sound_effects)
+                    world.process_data(world_data,list_of_tiles,item_image_list,mob_animations,screen,player,sound_effects,level)
                     player = world.player
 
                     
@@ -512,12 +512,12 @@ def main():
                         if action == 2:
                             death_fade.fade_counter = 0
                             start_intro =True
-                            level = 1
                             world_data = make_world_data()
                             world = World()
-                            world.process_data(world_data,list_of_tiles,item_image_list,mob_animations,screen,player,sound_effects)
+                            world.process_data(world_data,list_of_tiles,item_image_list,mob_animations,screen,player,sound_effects,level)
                             player = world.player
-                            player.health = 30
+                            player.health = int(player.max_health*0.3//1)
+                            player.keys = 0
                             player.alive = True
                             for item in world.item_list:
                                 item_group.add(item)
@@ -569,7 +569,6 @@ def main():
 
 
         pygame.display.update()
-
     pygame.quit()
 
 if __name__ == "__main__":

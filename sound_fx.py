@@ -20,7 +20,7 @@ wizard_hit_fx = pygame.mixer.Sound("assets/audio/wizard_hit_fx.opus")
 wizard_death_fx = pygame.mixer.Sound("assets/audio/wizard_death_fx.opus")
 fire_fx = pygame.mixer.Sound("assets/audio/fire.wav")
 player_sfx = [fire_fx,lightning_fx,player_f_death_fx,walk_1_fx,walk_2_fx,shot_fx,
-              player_m_hit_fx,player_m_death_fx,player_f_hit_fx,wizard_death_fx,wizard_hit_fx]
+              player_m_hit_fx,player_m_death_fx,player_f_hit_fx,wizard_death_fx,wizard_hit_fx,fireball_fx]
 
 hit_fx = pygame.mixer.Sound("assets/audio/arrow_hit.wav")
 demon_death_fx = pygame.mixer.Sound("assets/audio/demon_death.mp3")

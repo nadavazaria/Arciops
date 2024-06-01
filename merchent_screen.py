@@ -19,18 +19,18 @@ def roll_for_dicount(level):
     roll = random.random()
     price_modifier = 1
     color = constants.BLACK
-    if roll < 0.4:
+    if roll < 0.3:
         price_modifier = 1.3
         color = constants.RED
-    elif roll >= 0.4 and roll <= 0.8:
+    elif roll >= 0.3 and roll <= 0.7:
         pass
-    elif roll >= 0.6 and roll < 0.95:
+    elif roll >= 0.7 and roll < 0.95:
         price_modifier = 0.7
         color = constants.GREEN
     else:
-        price_modifier = 0.4
+        price_modifier = 0.5
         color = constants.GREEN
-    return price_modifier*level,color
+    return price_modifier*(level+2)/2,color
 
 def draw_shop_screen(font):
     # pygame.draw.rect(screen,constants.MENU_BG,(75,100,650,00))
@@ -62,7 +62,6 @@ def add_shop_entry(image,pos,text,price,color,index):
 """the game loop crashes when i try to access the confirnation window"""
 def confirmation_message():  
     
-    now = pygame.time.get_ticks()
     buy_button = Button((350,250),[btn_green_1,btn_red_1],(350,250),"Buy",scale_img)
     cancel_button = Button((350,350),[btn_green_1,btn_red_1],(350,350),"Cancel",scale_img)
     run = True
@@ -119,7 +118,6 @@ def merchent(player,weapon,level):
             if event.type == pygame.MOUSEBUTTONDOWN:
                 clicked = True
 
-        pygame.display.update()
         if ticks() - updated_frame >= frame_cooldown:
             if index <= 2:
                 index += 1 
@@ -159,6 +157,7 @@ def merchent(player,weapon,level):
                 if process_deal(player.coins,price2):
                     player.coins -= price2
                     buy_item_fx.play()
+                    player.health += 10
                     player.max_health += 10
 
         if upgrade == 2:
@@ -167,6 +166,7 @@ def merchent(player,weapon,level):
                 if process_deal(player.coins,price3):
                     player.coins -= price3
                     buy_item_fx.play()
+                    player.mana += 10
                     player.max_mana += 10
                 
         if upgrade == 3:
@@ -183,6 +183,7 @@ def merchent(player,weapon,level):
                     player.coins -= price5
                     buy_item_fx.play()
                     weapon.rate_of_fire -= 30
+        pygame.display.update()
 
        
 
@@ -199,10 +200,10 @@ def process_deal(coins,price):
 
             if ok_button.draw(screen):
                 return False
-            pygame.display.update()
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
+            pygame.display.update()
     else:
         return True
 

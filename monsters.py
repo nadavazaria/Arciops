@@ -24,6 +24,10 @@ class Monster:
         self.death_fx = sound_effect[1]#
         self.speed = speed#
         self.health = health#
+        self.collision_left = False
+        self.collision_top = False
+        self.collision_right = False
+        self.collision_bottom = False
         self.hit = False
         self.stunned = False
         self.chase = False
@@ -31,6 +35,10 @@ class Monster:
         self.speciel = ticks()
         self.exp_value = exp_value
         self.damage = damage
+        if self.char_type in boss_list:
+            self.stun_duration = 30
+        else:
+            self.stun_duration = 100
 
         if self.char_type in boss_list:    
             self.rect = pygame.Rect(0,0,constants.TILE_SIZE*2,constants.TILE_SIZE*2) 
@@ -71,7 +79,7 @@ class Monster:
         
         surface.blit(fliped_image,self.rect)
 
-        pygame.draw.rect(surface,constants.PINK,self.rect,1)
+        # pygame.draw.rect(surface,constants.PINK,self.rect,1)
 
     def update_action(self,new_action):
         if self.action != new_action:
@@ -88,15 +96,14 @@ class Monster:
         """move mobs reletive to camra"""
         if self.dist_from_player < 500:
             clipped_line = ()
-            stun_cooldown = 100
             fireball = None
-            fireball_cooldown = 700
+            fireball_cooldown = 500
 
             self.mob_dx =0
             self.mob_dy =0
 
 
-            if ticks() - self.last_hit < stun_cooldown:
+            if ticks() - self.last_hit < self.stun_duration:
                 self.stunned = True
                 self.action = "idle" 
             else:
@@ -120,10 +127,12 @@ class Monster:
                 
 
             if self.dist_from_player > constants.RANGE and self.chase:
-                if self.rect.centerx > player.rect.centerx and self.health > 0:
+                if self.rect.centerx > player.rect.centerx  and self.health > 0:
                     self.mob_dx = -self.speed
                 if self.rect.centerx < player.rect.centerx and self.health > 0:
                     self.mob_dx = self.speed
+                if self.rect.centerx <= player.rect.centerx + 1 and self.rect.centerx >= player.rect.centerx - 1:
+                    self.mob_dx = 0
                 
                 if self.rect.centery > player.rect.centery and self.health > 0:
                     self.mob_dy = -self.speed
@@ -131,7 +140,7 @@ class Monster:
                     self.mob_dy = self.speed
                 
             if not self.stunned:
-                self.move(self.mob_dx,self.mob_dy,obstacle_tiles)
+                self.move(obstacle_tiles)
 
             """damage to player"""
 
@@ -152,7 +161,7 @@ class Monster:
                     self.speciel = ticks()
                     fireball = Fireball(fireball_image,self.rect.centerx,self.rect.centery,player.rect.centerx,player.rect.centery)
             if self.char_type == constants.OGRE:
-                duration = 1500
+                duration = 2500
                 self.damage = 20
                 now = ticks()
                 if now - self.speciel > 4000:
@@ -160,54 +169,71 @@ class Monster:
                     self.special_fx.play()
                     self.speed = 6
                                    
-                    """download ogre grunt sound"""
                 if self.speciel - now < 0:
                     self.speed = 3
 
-            if self.char_type == constants.BIG_ZOMBIE:
+
                 
                 """do the special thing with animation change using the special timer """
             return fireball
         return None
 
-    def move(self,dx,dy,obstacle_tiles,exit_tile = None):
-       
-        if (dx == 0 and dy == 0):
+    def move(self,obstacle_tiles):
+        
+        if (self.mob_dx == 0 and self.mob_dy == 0):
             self.action = "idle" 
         else:
             self.action = "runing"
         self.update_action(self.action)
 
-        if (dx > 0):
+        if (self.mob_dx > 0):
             self.flip = False
-        if (dx < 0):
+        if (self.mob_dx < 0):
             self.flip = True
 
-        if (dx != 0 & dy != 0):
-            dx = dx * math.sqrt(2)/2  
-            dy = dy * math.sqrt(2)/2  
+        if self.mob_dx != 0 and self.mob_dy != 0:
+            self.mob_dx = self.mob_dx * math.sqrt(2)/2  
+            self.mob_dy = self.mob_dy * math.sqrt(2)/2  
 
         """check for collision with walls in x axis"""
         
-        self.rect.x += dx
+        self.rect.x += self.mob_dx
+      
         for wall in obstacle_tiles:
             if wall[1].colliderect(self.rect):
-                """chack where the player is moving"""
-                if  dx > 0:
+                """chack where the monster is moving"""
+                if  self.mob_dx > 0:
                     self.rect.right = wall[1].left
-                if dx < 0:
+                    self.collision_right = True
+                if self.mob_dx < 0:
                     self.rect.left = wall[1].right
+                    self.collision_left = True
+                """try to move dowm """
 
-        self.rect.y += dy
+        self.rect.y += self.mob_dy
+     
         for wall in obstacle_tiles:
             if wall[1].colliderect(self.rect):
-                """chack where the player is moving"""
-                if  dy > 0:
+                """chack where the mpnster is moving"""
+                if  self.mob_dy > 0:
                     self.rect.bottom = wall[1].top
-                if dy < 0:
+                    self.collision_bottom = True
+                    
+                    
+                if self.mob_dy < 0:
                     self.rect.top = wall[1].bottom
-
-
+                    self.collision_top = True
+                    
+                
+                    """try to move up """
+        # if self.collision_bottom:
+        #     print ("collision_bottom")
+        # if self.collision_top:
+        #     print ("collision_top")
+        # if self.collision_left:
+        #     print ("collision_left")
+        # if self.collision_right:
+        #     print ("collision_right")
 class Spawner(Monster):
     def __init__(self,x,y,health,mob_animations,char_type,sound_effect,speed,exp_value,delay,spawned_mob,damage = 10):
         Monster.__init__(self,x,y,health,mob_animations,char_type,sound_effect,speed,exp_value,damage)
@@ -223,12 +249,14 @@ class Spawner(Monster):
         
         new_monster = None
 
-        if ticks() - self.last_spawn > self.spawn_delay and self.dist_from_player < 600:
+        if ticks() - self.last_spawn > self.spawn_delay and self.dist_from_player < 400:
             self.stunned = True
             if self.spawned_mob in [constants.NECROMANCER,constants.GOBLIN_SHAMAN]:
-                new_monster = Spawner(self.rect.centerx,self.rect.centery,250,self.mob_animations,self.spawned_mob,[self.hit_fx,monster_death_fx,summon_fx],3,3,4000,constants.SKELETON)
+                new_monster = Spawner(self.rect.centerx,self.rect.centery,400,self.mob_animations,self.spawned_mob,[self.hit_fx,monster_death_fx,summon_fx],3,5,5000,constants.SKELETON)
+            elif self.spawned_mob == constants.CHORT:    
+                new_monster = Monster(self.rect.centerx,self.rect.centery,1200,self.mob_animations,self.spawned_mob,[self.hit_fx,self.death_fx],4,25)
             else:    
-                new_monster = Monster(self.rect.centerx,self.rect.centery,250,self.mob_animations,self.spawned_mob,[self.hit_fx,self.death_fx],3,3)
+                new_monster = Monster(self.rect.centerx,self.rect.centery,250,self.mob_animations,self.spawned_mob,[self.hit_fx,self.death_fx],3,10)
             self.special_fx.play()
             self.last_spawn = ticks()
 

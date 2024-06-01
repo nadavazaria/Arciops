@@ -16,7 +16,7 @@ prompt_2="There are no favors I will give out for free \nbetter luck in the next
 
 
 
-def write_paragraph(surface,text,pos,color):
+def write_paragraph(surface,text,pos,color,edge):
         collection = [word.split(' ') for word in text.splitlines()]
         space = font.size(' ')[0]
         x,y = pos
@@ -24,7 +24,7 @@ def write_paragraph(surface,text,pos,color):
             for words in lines :
                 word_surface = font.render(words,True,color)
                 word_width , garbage  = word_surface.get_size()
-                if x + word_width >= 600:
+                if x + word_width >= edge:
                     x = pos[0]
                     y += 30
                 surface.blit(word_surface,(x,y))
@@ -54,7 +54,7 @@ def you_died(player):
         
         screen.blit(death_bg,(0,0))
         screen.blit(reaper_image,(430,0))
-        write_paragraph(screen,prompt,(300,200),constants.RED)
+        write_paragraph(screen,prompt,(300,200),constants.RED,600)
         
         if btn_quit.draw(screen) and clicked:
             action = 0
