@@ -37,7 +37,7 @@ def draw_shop_screen(font):
     pygame.draw.rect(screen,constants.BLACK,(70,100,660,375),5)
     pygame.draw.rect(screen,constants.WHITE,(75,100,650,75))
     pygame.draw.rect(screen,constants.BLACK,(70,100,660,75),5)
-    shop_title = font.render("Black Merchent",True,constants.BLACK)
+    shop_title = font.render("Black Market",True,constants.BLACK)
     screen.blit(scale_img(shop_title,1.5),(180,125))
     
 def add_shop_entry(image,pos,text,price,color,index):

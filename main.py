@@ -26,7 +26,7 @@ def main():
     clock = pygame.time.Clock()
 
     """define the game level"""
-    level = 13
+    level = 5
     start_game = False
     pause_game = False
     screen_scroll = [0,0]
